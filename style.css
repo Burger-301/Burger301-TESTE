@@ -378,7 +378,7 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 7px 4px; /* Espaçamento interno menor entre os adicionais */
+    padding: 7px 4px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
     font-size: 0.92rem;
@@ -416,11 +416,11 @@ body {
     position: relative;
     width: 100%;
     max-width: 480px;
-    max-height: 85vh; /* Altura ajustada para caber melhor na tela sem forçar rolagem */
+    max-height: 85vh;
     overflow-y: auto;
     background: #fff;
     border-radius: 16px;
-    padding: 16px; /* Padding reduzido para otimizar espaço */
+    padding: 16px;
     box-sizing: border-box;
 }
 
@@ -454,7 +454,7 @@ body {
 
 .observacao-produto {
     width: 100%;
-    min-height: 70px; /* Caixa de observação um pouco mais compacta */
+    min-height: 70px;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 7px;
@@ -896,6 +896,8 @@ body {
         width: 100%;
         max-width: 100%;
         padding: 0;
+        /* Restaura o fluxo normal para empilhar o badge no topo do conteúdo do banner */
+        justify-content: flex-start;
     }
 
     /* Remove título, parágrafo e diferenciais na versão mobile */
@@ -905,17 +907,17 @@ body {
         display: none !important;
     }
 
-    /* Badge Exclusivo no topo da imagem */
+    /* Badge Exclusivo posicionado de volta no topo da imagem no celular */
     .badge-exclusivo {
         font-size: 0.68rem;
         padding: 6px 14px;
         margin-top: 0;
-        margin-bottom: 12px;
+        margin-bottom: auto; /* Joga o badge para o topo do bloco de conteúdo */
         background-color: rgba(18, 18, 18, 0.88);
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão posicionado de forma centralizada e sem vazar para o lado */
+    /* Botão posicionado de forma centralizada na base */
     .btn-hero-principal {
         position: relative !important;
         bottom: auto !important;
@@ -928,7 +930,7 @@ body {
         font-size: 0.95rem;
         box-sizing: border-box;
         text-align: center;
-        margin-top: 5px;
+        margin-top: auto; /* Empurra o botão para a parte inferior */
     }
 
     .cardapio {
