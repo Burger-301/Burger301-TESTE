@@ -826,7 +826,7 @@ body {
 }
 
 /* =========================================
-   AJUSTES ESPECÍFICOS PARA TELEMÓVEL
+   AJUSTES ESPECÍFICOS PARA TELEMÓVEL / CELULAR
 ========================================= */
 
 @media (max-width: 768px) {
@@ -841,52 +841,60 @@ body {
         font-size: 0.68rem;
     }
 
-    /* BANNER HERO NO CELULAR COM A NOVA IMAGEM VERTICAL */
+    /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 480px;
-        padding: 24px 14px;
+        min-height: 500px;
+        padding: 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
+        display: flex;
+        align-items: stretch;
     }
 
     .hero-overlay {
-        background: rgba(0, 0, 0, 0.4);
+        background: rgba(0, 0, 0, 0.15); /* Overlay bem leve para destacar a imagem */
     }
 
     .hero-conteudo {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
         max-width: 100%;
+        padding: 0;
     }
 
+    /* Remove título, parágrafo e diferenciais na versão mobile */
+    .hero-conteudo h1,
+    .hero-conteudo p,
+    .hero-diferenciais {
+        display: none !important;
+    }
+
+    /* Badge Exclusivo no topo da imagem */
     .badge-exclusivo {
-        font-size: 0.7rem;
-        padding: 4px 12px;
-        margin-bottom: 10px;
+        font-size: 0.68rem;
+        padding: 6px 14px;
+        margin-top: 4px;
+        margin-bottom: 0;
+        background-color: rgba(18, 18, 18, 0.88);
+        border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    .hero-conteudo h1 {
-        font-size: 1.35rem;
-        line-height: 1.25;
-        margin-bottom: 10px;
-    }
-
-    .hero-conteudo p {
-        font-size: 0.86rem;
-        margin-bottom: 18px;
-    }
-
+    /* Botão na parte inferior do banner */
     .btn-hero-principal {
         display: block;
         width: 100%;
-        padding: 13px 16px;
+        max-width: 340px;
+        padding: 14px 20px;
         font-size: 0.95rem;
+        margin-bottom: 6px;
         box-sizing: border-box;
-    }
-
-    .hero-diferenciais {
-        font-size: 0.75rem;
-        gap: 6px;
-        margin-top: 14px;
+        text-align: center;
     }
 
     .cardapio {
