@@ -851,8 +851,8 @@ body {
 
     /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 500px;
-        padding: 16px;
+        min-height: 600px; /* Aumentado para expandir o fundo */
+        padding: 16px 16px 10px 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
@@ -893,14 +893,14 @@ body {
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão na parte inferior do banner */
+    /* Botão posicionado bem abaixo no banner */
     .btn-hero-principal {
         display: block;
         width: 100%;
         max-width: 340px;
         padding: 14px 20px;
         font-size: 0.95rem;
-        margin-bottom: 6px;
+        margin-bottom: 0px; /* Alinhado ao fundo do banner */
         box-sizing: border-box;
         text-align: center;
     }
