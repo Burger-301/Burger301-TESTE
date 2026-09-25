@@ -939,3 +939,36 @@ body {
         padding: 15px;
     }
 }
+
+/* =========================================
+   CORREÇÃO FINAL: CARRINHO FLUTUANTE MOBILE
+========================================= */
+@media (max-width: 768px) {
+    /* Ajusta o container principal da barra flutuante no celular */
+    .carrinho-flutuante {
+        /* Garante que o texto e o botão fiquem centralizados e separados */
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        
+        /* Espaçamento interno para o texto não grudar nas bordas */
+        padding: 12px 16px !important; 
+        
+        /* Dá um respiro nas laterais da tela do celular */
+        width: calc(100% - 32px) !important; 
+        left: 50% !important;
+        transform: translateX(-50%) translateY(150px); /* Mantém animação de entrada */
+        
+        /* Tamanho de fonte ligeiramente menor para caber tudo */
+        font-size: 0.9rem !important; 
+        gap: 10px; /* Espaçamento entre o texto e o botão */
+    }
+
+    /* Ajusta o botão "VER PEDIDO" no celular */
+    #abrir-carrinho {
+        padding: 10px 14px !important;
+        font-size: 0.85rem !important;
+        /* Garante que o texto do botão não quebre linha */
+        white-space: nowrap; 
+    }
+}
