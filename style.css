@@ -225,6 +225,14 @@ body {
     transform: translateY(-2px);
 }
 
+/* Sombra e Destaque para o Emoji dentro do Botão */
+.icone-emoji {
+    display: inline-block;
+    filter: drop-shadow(0px 2px 5px rgba(0, 0, 0, 0.75));
+    margin-right: 6px;
+    transform: translateY(1px);
+}
+
 .hero-diferenciais {
     display: flex;
     align-items: center;
@@ -927,4 +935,4 @@ body {
     .produto-informacoes {
         padding: 15px;
     }
-} 
+}
