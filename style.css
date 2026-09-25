@@ -364,12 +364,12 @@ body {
 }
 
 /* =========================================
-   ADICIONAIS E MODAL
+   ADICIONAIS E MODAL (COMPACTO)
 ========================================= */
 
 .lista-adicionais {
     background-color: white;
-    padding: 10px 20px;
+    padding: 5px 15px;
     border-radius: 12px;
     box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
 }
@@ -377,10 +377,11 @@ body {
 .adicional {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 15px 5px;
+    gap: 10px;
+    padding: 7px 4px; /* Espaçamento interno menor entre os adicionais */
     border-bottom: 1px solid #eee;
     cursor: pointer;
+    font-size: 0.92rem;
 }
 
 .adicional:last-child {
@@ -403,7 +404,7 @@ body {
     background: rgba(0, 0, 0, 0.65);
     align-items: center;
     justify-content: center;
-    padding: 20px;
+    padding: 15px;
     overflow-y: auto;
 }
 
@@ -414,36 +415,37 @@ body {
 .modal-conteudo {
     position: relative;
     width: 100%;
-    max-width: 520px;
-    max-height: 90vh;
+    max-width: 480px;
+    max-height: 85vh; /* Altura ajustada para caber melhor na tela sem forçar rolagem */
     overflow-y: auto;
     background: #fff;
     border-radius: 16px;
-    padding: 25px;
+    padding: 16px; /* Padding reduzido para otimizar espaço */
     box-sizing: border-box;
 }
 
 .fechar-modal {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 8px;
+    right: 12px;
     border: none;
     background: transparent;
-    font-size: 30px;
+    font-size: 26px;
     cursor: pointer;
 }
 
 .botao-confirmar {
     width: 100%;
-    padding: 15px;
+    padding: 13px;
     border: none;
     border-radius: 8px;
     background-color: #f28c28;
     color: white;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: bold;
     cursor: pointer;
     transition: 0.3s;
+    margin-top: 10px;
 }
 
 .botao-confirmar:hover {
@@ -452,11 +454,11 @@ body {
 
 .observacao-produto {
     width: 100%;
-    min-height: 100px;
-    padding: 12px;
+    min-height: 70px; /* Caixa de observação um pouco mais compacta */
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 7px;
-    font-size: 16px;
+    font-size: 15px;
     font-family: inherit;
     resize: vertical;
 }
