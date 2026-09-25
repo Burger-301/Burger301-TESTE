@@ -855,13 +855,7 @@ body {
     }
 
     .hero-conteudo {
-        background: rgba(18, 18, 18, 0.85);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border: 1px solid rgba(242, 140, 40, 0.35);
-        border-radius: 16px;
-        padding: 20px 16px;
-        width: 100%;
+        max-width: 100%;
     }
 
     .badge-exclusivo {
