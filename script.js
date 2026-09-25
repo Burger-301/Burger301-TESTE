@@ -224,6 +224,8 @@ const abrirCarrinho = document.getElementById("abrir-carrinho");
 const resumoCarrinho = document.getElementById("resumo-carrinho");
 const formularioPedido = document.getElementById("formulario-pedido");
 const painelCarrinho = document.getElementById("carrinho");
+const dadosPedido = document.getElementById("dados-pedido");
+const botaoVoltarDados = document.getElementById("voltar-cardapio-dados");
 
 /* =========================================
    AUXILIARES
@@ -453,7 +455,11 @@ function atualizarCarrinho() {
     valorTotal.textContent = formatarMoeda(total);
     resumoCarrinho.textContent = `${quantidadeItens} ${quantidadeItens === 1 ? "item" : "itens"} • ${formatarMoeda(total)}`;
     finalizarPedido.disabled = false;
-    carrinhoFlutuante.classList.add("visivel");
+    
+    // Se a seção de dados do cliente NÃO estiver visível, mostra o flutuante
+    if (!dadosPedido.classList.contains("visivel")) {
+        carrinhoFlutuante.classList.add("visivel");
+    }
 
     configurarBotoesCarrinho();
 }
@@ -496,6 +502,7 @@ function configurarBotoesCarrinho() {
 abrirCarrinho.addEventListener("click", () => painelCarrinho.classList.add("aberto"));
 continuarComprando.addEventListener("click", () => painelCarrinho.classList.remove("aberto"));
 
+// FINALIZAR PEDIDO: Esconde o painel do carrinho, esconde o flutuante e mostra a tela de dados
 finalizarPedido.addEventListener("click", function () {
     if (carrinho.length === 0) return;
 
@@ -505,11 +512,30 @@ finalizarPedido.addEventListener("click", function () {
     }
 
     painelCarrinho.classList.remove("aberto");
-    const dadosPedido = document.getElementById("dados-pedido");
+    
+    // FAZ O CARRINHO FLUTUANTE SUMIR
+    if (carrinhoFlutuante) {
+        carrinhoFlutuante.classList.remove("visivel");
+    }
+
     dadosPedido.classList.add("visivel");
 
     setTimeout(() => dadosPedido.scrollIntoView({ behavior: "smooth" }), 100);
 });
+
+// BOTÃO CONTINUAR COMPRANDO NA TELA DE DADOS: Esconde a tela de dados e traz o flutuante de volta (se houver itens)
+if (botaoVoltarDados) {
+    botaoVoltarDados.addEventListener("click", function () {
+        dadosPedido.classList.remove("visivel");
+
+        // Se ainda tem itens no carrinho, mostra o flutuante novamente
+        if (carrinho.length > 0 && carrinhoFlutuante) {
+            carrinhoFlutuante.classList.add("visivel");
+        }
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+}
 
 /* CAMPO DE TROCO DINÂMICO */
 document.querySelectorAll('input[name="pagamento"]').forEach(radio => {
@@ -569,53 +595,35 @@ formularioPedido.addEventListener("submit", function (evento) {
         mensagem += `${item.quantidade}x ${item.nome} - ${formatarMoeda(item.precoBase * item.quantidade)}\n`;
 
         if (item.adicionais && item.adicionais.length > 0) {
-            item.adicionais.forEach(adicional => {
-                mensagem += `   + ${adicional.nome} - ${formatarMoeda(adicional.preco)}\n`;
+            item.adicionais.forEach(ad => {
+                mensagem += `  + ${ad.nome} (${formatarMoeda(ad.preco)})\n`;
             });
         }
-
         if (item.observacao) {
-            mensagem += `   📝 Obs: ${item.observacao}\n`;
+            mensagem += `  Obs: ${item.observacao}\n`;
         }
-        mensagem += `\n`;
+        mensagem += `  Subtotal: ${formatarMoeda(subtotal)}\n\n`;
     });
 
-    mensagem += `*TOTAL: ${formatarMoeda(totalPedido)}*\n\n`;
-
+    mensagem += `*Total do Pedido: ${formatarMoeda(totalPedido)}*\n\n`;
+    mensagem += `Forma de pagamento: ${pagamento}\n`;
     if (pagamento === "Dinheiro" && troco) {
-        mensagem += `Forma de pagamento: ${pagamento} (Troco para: ${troco})\n`;
-    } else {
-        mensagem += `Forma de pagamento: ${pagamento}\n`;
+        mensagem += `Troco para: ${troco}\n`;
     }
-
     if (observacao) {
-        mensagem += `\nObservação geral: ${observacao}\n`;
+        mensagem += `Observações gerais: ${observacao}\n`;
     }
 
-    const numeroWhatsApp = "5551981061618";
-    const url = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+    const telefone = "5551981061618";
+    const url = `https://api.whatsapp.com/send?phone=${telefone}&text=${encodeURIComponent(mensagem)}`;
 
     window.open(url, "_blank");
 });
 
-/* =========================================
-   FUNÇÃO PARA EXIBIR MENSAGEM / BALÃO
-========================================= */
-
 function mostrarMensagem(texto) {
-    const mensagemExistente = document.querySelector(".mensagem-sucesso");
-    if (mensagemExistente) {
-        mensagemExistente.remove();
-    }
-
-    const div = document.createElement("div");
-    div.className = "mensagem-sucesso";
-    div.textContent = texto;
-    document.body.appendChild(div);
-
-    setTimeout(() => {
-        div.style.opacity = "0";
-        div.style.transition = "opacity 0.5s ease";
-        setTimeout(() => div.remove(), 500);
-    }, 4000);
+    const msg = document.createElement("div");
+    msg.className = "mensagem-sucesso";
+    msg.textContent = texto;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
 }
