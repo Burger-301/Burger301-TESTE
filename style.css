@@ -32,7 +32,7 @@ body {
     z-index: 1000;
     background-color: #121212;
     border-bottom: 1px solid #222222;
-    padding: 4px 16px;
+    padding: 6px 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
     margin-bottom: 0 !important;
 }
@@ -135,13 +135,13 @@ body {
 }
 
 /* =========================================
-   BANNER HERO - IMAGEM EM MÁXIMO DESTAQUE
+   BANNER HERO DE ALTA CONVERSÃO
 ========================================= */
 
 .banner-hero {
     position: relative;
     width: 100%;
-    min-height: 480px;
+    min-height: 460px;
     background-image: url("imagens/banner.jpg");
     background-size: cover;
     background-position: center top;
@@ -155,11 +155,10 @@ body {
     margin-top: 0 !important;
 }
 
-/* Camada suave (sem blur e mais clara) para deixar a imagem super visível */
 .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.32) 50%, rgba(0, 0, 0, 0.7) 100%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.75) 100%);
     z-index: 1;
 }
 
@@ -191,7 +190,7 @@ body {
     line-height: 1.25;
     margin-bottom: 14px;
     color: #ffffff;
-    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0,0,0,0.8);
+    text-shadow: 0 3px 12px rgba(0, 0, 0, 0.95);
 }
 
 .destaque-laranja {
@@ -207,7 +206,6 @@ body {
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.95);
 }
 
-/* Botão Principal */
 .btn-hero-principal {
     display: inline-block;
     background-color: #f28c28;
@@ -828,41 +826,71 @@ body {
 }
 
 /* =========================================
-   AJUSTES PARA DISPOSITIVOS MÓVEIS (CELULAR)
+   AJUSTES ESPECÍFICOS PARA TELEMÓVEL
 ========================================= */
 
 @media (max-width: 768px) {
 
-    /* Banner Hero no Celular */
+    /* Cabeçalho Ajustado no Telemóvel */
+    .logo-header {
+        font-size: 1.18rem;
+    }
+
+    .status-loja {
+        padding: 2px 6px;
+        font-size: 0.68rem;
+    }
+
+    /* Banner Hero Ajustado no Telemóvel */
     .banner-hero {
-        min-height: 400px;
-        padding: 30px 16px;
-        background-position: center top;
+        min-height: 370px;
+        padding: 22px 14px;
+        background-position: 20% center;
+    }
+
+    .hero-overlay {
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.88) 100%);
+    }
+
+    .badge-exclusivo {
+        font-size: 0.7rem;
+        padding: 4px 12px;
+        margin-bottom: 10px;
     }
 
     .hero-conteudo h1 {
-        font-size: 1.65rem;
+        font-size: 1.4rem;
+        line-height: 1.25;
+        margin-bottom: 10px;
     }
 
     .hero-conteudo p {
-        font-size: 0.88rem;
+        font-size: 0.86rem;
+        margin-bottom: 18px;
     }
 
     .btn-hero-principal {
         display: block;
         width: 100%;
-        padding: 14px 15px;
+        padding: 13px 16px;
+        font-size: 0.95rem;
         box-sizing: border-box;
+    }
+
+    .hero-diferenciais {
+        font-size: 0.75rem;
+        gap: 6px;
+        margin-top: 14px;
     }
 
     .cardapio {
         padding-top: 0;
     }
 
-    /* Espaçamento geral das seções */
+    /* Espaçamento geral das secções */
     .titulo-secao {
-        margin-top: 40px !important;
-        margin-bottom: 20px !important;
+        margin-top: 30px !important;
+        margin-bottom: 15px !important;
         clear: both;
     }
 
@@ -884,14 +912,5 @@ body {
 
     .produto-informacoes {
         padding: 15px;
-    }
-
-    .logo-header {
-        font-size: 1.60rem;
-    }
-
-    .status-loja {
-        padding: 2px 6px;
-        font-size: 0.68rem;
     }
 }
