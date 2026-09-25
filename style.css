@@ -851,8 +851,8 @@ body {
 
     /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 520px;
-        padding: 16px 16px 15px 16px;
+        min-height: 500px;
+        padding: 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
@@ -869,7 +869,7 @@ body {
         z-index: 2;
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
+        justify-content: flex-start;
         align-items: center;
         width: 100%;
         max-width: 100%;
@@ -893,21 +893,23 @@ body {
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão posicionado mais abaixo para revelar o nome BURGER 301 */
+    /* Botão posicionado na base da imagem sem cobrir o texto */
     .btn-hero-principal {
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
         display: block;
-        width: 100%;
+        width: calc(100% - 32px);
         max-width: 340px;
         padding: 14px 20px;
         font-size: 0.95rem;
-        margin-top: auto;
-        margin-bottom: -10px; /* Baixa o botão para cobrir a frase secundária */
         box-sizing: border-box;
         text-align: center;
     }
 
     .cardapio {
-        padding-top: 0;
+        padding-top: 25px;
     }
 
     /* Espaçamento geral das secções */
