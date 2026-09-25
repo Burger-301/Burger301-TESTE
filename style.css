@@ -135,7 +135,7 @@ body {
 }
 
 /* =========================================
-   BANNER HERO DE ALTA CONVERSÃO
+   BANNER HERO - VERSÃO DESKTOP (PC)
 ========================================= */
 
 .banner-hero {
@@ -841,15 +841,27 @@ body {
         font-size: 0.68rem;
     }
 
-    /* Banner Hero Ajustado no Telemóvel */
+    /* BANNER HERO NO CELULAR COM A NOVA IMAGEM VERTICAL */
     .banner-hero {
-        min-height: 370px;
-        padding: 22px 14px;
-        background-position: 20% center;
+        min-height: 480px;
+        padding: 24px 14px;
+        background-image: url("imagens/banner-mobile.jpg");
+        background-size: cover;
+        background-position: center top;
     }
 
     .hero-overlay {
-        background: linear-gradient(180deg, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.55) 50%, rgba(0, 0, 0, 0.88) 100%);
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .hero-conteudo {
+        background: rgba(18, 18, 18, 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid rgba(242, 140, 40, 0.35);
+        border-radius: 16px;
+        padding: 20px 16px;
+        width: 100%;
     }
 
     .badge-exclusivo {
@@ -859,7 +871,7 @@ body {
     }
 
     .hero-conteudo h1 {
-        font-size: 1.4rem;
+        font-size: 1.35rem;
         line-height: 1.25;
         margin-bottom: 10px;
     }
