@@ -837,6 +837,7 @@ body {
 ========================================= */
 
 .botao-duvidas-whatsapp {
+    display: inline-link;
     display: inline-block;
     margin: 15px 0;
     padding: 10px 20px;
@@ -873,8 +874,8 @@ body {
 
     /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 480px;
-        padding: 20px 16px;
+        min-height: 520px; /* Aumentado ligeiramente para dar espaço ideal */
+        padding: 12px 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
@@ -884,7 +885,7 @@ body {
     }
 
     .hero-overlay {
-        background: rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.18);
     }
 
     .hero-conteudo {
@@ -892,10 +893,10 @@ body {
         z-index: 2;
         display: flex;
         flex-direction: column;
-        justify-content: space-between; /* Mantém o selo no topo e o botão na base */
+        justify-content: space-between; /* Empurra o selo para o teto e o botão para o chão */
         align-items: center;
         width: 100%;
-        height: 410px; /* Garante altura suficiente para separar o topo da base */
+        height: 480px; /* Altura exata da área útil para afastar bem ambos */
         padding: 0;
     }
 
@@ -906,17 +907,16 @@ body {
         display: none !important;
     }
 
-    /* Badge Exclusivo fixo no topo da imagem */
+    /* Badge Exclusivo bem no topo do banner */
     .badge-exclusivo {
-        font-size: 0.68rem;
-        padding: 6px 14px;
-        margin-top: 0;
-        margin-bottom: 0;
-        background-color: rgba(18, 18, 18, 0.88);
+        font-size: 0.65rem;
+        padding: 5px 12px;
+        margin-top: 2px;
+        background-color: rgba(18, 18, 18, 0.9);
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão posicionado de forma centralizada na base do banner */
+    /* Botão posicionado bem na base inferior da imagem */
     .btn-hero-principal {
         position: relative !important;
         bottom: auto !important;
@@ -925,11 +925,11 @@ body {
         display: block;
         width: 100%;
         max-width: 320px;
-        padding: 13px 20px;
-        font-size: 0.95rem;
+        padding: 12px 20px;
+        font-size: 0.92rem;
         box-sizing: border-box;
         text-align: center;
-        margin-top: 0;
+        margin-bottom: 2px;
     }
 
     .cardapio {
