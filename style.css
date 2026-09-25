@@ -871,17 +871,18 @@ body {
 
     /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 500px;
-        padding: 16px;
+        min-height: 480px;
+        padding: 16px 16px 35px 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
         display: flex;
-        align-items: stretch;
+        align-items: flex-end;
+        justify-content: center;
     }
 
     .hero-overlay {
-        background: rgba(0, 0, 0, 0.15);
+        background: rgba(0, 0, 0, 0.2);
     }
 
     .hero-conteudo {
@@ -889,7 +890,6 @@ body {
         z-index: 2;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
         align-items: center;
         width: 100%;
         max-width: 100%;
@@ -907,25 +907,26 @@ body {
     .badge-exclusivo {
         font-size: 0.68rem;
         padding: 6px 14px;
-        margin-top: 4px;
-        margin-bottom: 0;
+        margin-top: 0;
+        margin-bottom: 12px;
         background-color: rgba(18, 18, 18, 0.88);
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão posicionado na base da imagem sem cobrir o texto */
+    /* Botão posicionado de forma centralizada e sem vazar para o lado */
     .btn-hero-principal {
-        position: absolute;
-        bottom: -22px;
-        left: 50%;
-        transform: translateX(-50%);
+        position: relative !important;
+        bottom: auto !important;
+        left: auto !important;
+        transform: none !important;
         display: block;
-        width: calc(100% - 32px);
-        max-width: 340px;
-        padding: 14px 20px;
+        width: 100%;
+        max-width: 320px;
+        padding: 13px 20px;
         font-size: 0.95rem;
         box-sizing: border-box;
         text-align: center;
+        margin-top: 5px;
     }
 
     .cardapio {
@@ -966,29 +967,25 @@ body {
 @media (max-width: 768px) {
     /* Ajusta o container principal da barra flutuante no celular */
     .carrinho-flutuante {
-        /* Garante que o texto e o botão fiquem centralizados e separados */
         display: flex !important;
         align-items: center;
         justify-content: space-between;
-        
-        /* Espaçamento interno para o texto não grudar nas bordas */
         padding: 12px 16px !important; 
-        
-        /* Dá um respiro nas laterais da tela do celular */
         width: calc(100% - 32px) !important; 
         left: 50% !important;
-        transform: translateX(-50%, 150px); /* Mantém animação de entrada */
-        
-        /* Tamanho de fonte ligeiramente menor para caber tudo */
+        transform: translate(-50%, 150px);
         font-size: 0.9rem !important; 
-        gap: 10px; /* Espaçamento entre o texto e o botão */
+        gap: 10px;
+    }
+
+    .carrinho-flutuante.visivel {
+        transform: translate(-50%, 0) !important;
     }
 
     /* Ajusta o botão "VER PEDIDO" no celular */
     #abrir-carrinho {
         padding: 10px 14px !important;
         font-size: 0.85rem !important;
-        /* Garante que o texto do botão não quebre linha */
         white-space: nowrap; 
     }
 }
