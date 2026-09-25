@@ -873,8 +873,8 @@ body {
 
     /* BANNER HERO NO CELULAR */
     .banner-hero {
-        min-height: 560px; /* Altura aumentada para afastar mais os elementos */
-        padding: 10px 16px;
+        min-height: 610px; /* Altura maximizada para o limite do banner */
+        padding: 4px 16px;
         background-image: url("imagens/banner-mobile.jpg");
         background-size: cover;
         background-position: center top;
@@ -884,7 +884,7 @@ body {
     }
 
     .hero-overlay {
-        background: rgba(0, 0, 0, 0.05); /* Cortina praticamente removida para deixar o banner limpo e nítido */
+        background: rgba(0, 0, 0, 0.02); /* Cortina praticamente removida para total clareza */
     }
 
     .hero-conteudo {
@@ -895,7 +895,7 @@ body {
         justify-content: space-between; 
         align-items: center;
         width: 100%;
-        height: 520px; /* Área útil expandida para afastar o selo e o botão */
+        height: 590px; /* Área interna esticada ao máximo para encostar o botão no limite inferior */
         padding: 0;
     }
 
@@ -906,16 +906,16 @@ body {
         display: none !important;
     }
 
-    /* Badge Exclusivo bem no topo da imagem */
+    /* Badge Exclusivo no topo */
     .badge-exclusivo {
         font-size: 0.65rem;
         padding: 5px 12px;
-        margin-top: 4px;
+        margin-top: 2px;
         background-color: rgba(18, 18, 18, 0.9);
         border: 1px solid rgba(242, 140, 40, 0.8);
     }
 
-    /* Botão posicionado na base inferior da imagem */
+    /* Botão posicionado praticamente no limite inferior do banner */
     .btn-hero-principal {
         position: relative !important;
         bottom: auto !important;
@@ -928,7 +928,7 @@ body {
         font-size: 0.92rem;
         box-sizing: border-box;
         text-align: center;
-        margin-bottom: 4px;
+        margin-bottom: 0px; /* Colado no limite final */
     }
 
     .cardapio {
