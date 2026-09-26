@@ -436,8 +436,17 @@
         <p class="copyright">Projeto desenvolvido para inclusão digital e otimização de pedidos.</p>
     </footer>
 
-    <!-- JAVASCRIPT -->
-    <script src="script.js"></script>
+    <!-- SCRIPT PARA FORÇAR A PÁGINA A ABRIR SEMPRE NO TOPO -->
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                window.scrollTo(0, 0);
+            }, 10);
+        });
+    </script>
+
+    <!-- JAVASCRIPT PRINCIPAL -->
+    <script src="script.js?v=6"></script>
 </body>
 
 </html>
