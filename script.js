@@ -238,6 +238,20 @@ function formatarMoeda(valor) {
     });
 }
 
+function mostrarMensagem(texto) {
+    const mensagemAntiga = document.querySelector(".mensagem-sucesso");
+    if (mensagemAntiga) mensagemAntiga.remove();
+
+    const div = document.createElement("div");
+    div.className = "mensagem-sucesso";
+    div.textContent = texto;
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+        div.remove();
+    }, 3000);
+}
+
 /* =========================================
    MODAL DE PRODUTO
 ========================================= */
@@ -569,61 +583,48 @@ formularioPedido.addEventListener("submit", function (evento) {
     const nome = document.getElementById("nome").value.trim();
     const torre = document.getElementById("torre").value.trim();
     const apartamento = document.getElementById("apartamento").value.trim();
-    const observacao = document.getElementById("observacao").value.trim();
     const pagamentoSelecionado = document.querySelector('input[name="pagamento"]:checked');
-    const troco = document.getElementById("troco").value.trim();
+    const formaPagamento = pagamentoSelecionado ? pagamentoSelecionado.value : "Não informado";
+    const troco = document.getElementById("troco").value.trim() || "Não precisa";
 
-    if (!nome || !torre || !apartamento || !pagamentoSelecionado) {
-        alert("Preencha todos os campos obrigatórios.");
-        return;
-    }
+    let mensagem = `🍔 *NOVO PEDIDO - BURGER 301*%0A%0A`;
+    mensagem += `Cliente: ${nome}%0A`;
+    mensagem += `Torre: ${torre}%0A`;
+    mensagem += `Apartamento: ${apartamento}%0A%0A`;
+    mensagem += `*PEDIDO*%0A%0A`;
 
-    const pagamento = pagamentoSelecionado.value;
+    let totalGeral = 0;
 
-    let mensagem = `🍔 *NOVO PEDIDO - BURGER 301*\n\n`;
-    mensagem += `Cliente: ${nome}\n`;
-    mensagem += `Torre: ${torre}\n`;
-    mensagem += `Apartamento: ${apartamento}\n\n`;
-    mensagem += `*PEDIDO*\n\n`;
+    carrinho.forEach(item => {
+        const subtotalItem = item.valorUnitario * item.quantidade;
+        totalGeral += subtotalItem;
 
-    let totalPedido = 0;
-
-    carrinho.forEach(function (item) {
-        const subtotal = item.valorUnitario * item.quantidade;
-        totalPedido += subtotal;
-
-        mensagem += `${item.quantidade}x ${item.nome} - ${formatarMoeda(item.precoBase * item.quantidade)}\n`;
+        mensagem += `${item.quantidade}x ${item.nome} - ${formatarMoeda(subtotalItem)}%0A`;
 
         if (item.adicionais && item.adicionais.length > 0) {
-            item.adicionais.forEach(ad => {
-                mensagem += `  + ${ad.nome} (${formatarMoeda(ad.preco)})\n`;
+            item.adicionais.forEach(adicional => {
+                mensagem += `   + ${adicional.nome} - ${formatarMoeda(adicional.preco)}%0A`;
             });
         }
+
         if (item.observacao) {
-            mensagem += `  Obs: ${item.observacao}\n`;
+            mensagem += `   Obs: ${item.observacao}%0A`;
         }
-        mensagem += `  Subtotal: ${formatarMoeda(subtotal)}\n\n`;
+
+        mensagem += `%0A`;
     });
 
-    mensagem += `*Total do Pedido: ${formatarMoeda(totalPedido)}*\n\n`;
-    mensagem += `Forma de pagamento: ${pagamento}\n`;
-    if (pagamento === "Dinheiro" && troco) {
-        mensagem += `Troco para: ${troco}\n`;
-    }
-    if (observacao) {
-        mensagem += `Observações gerais: ${observacao}\n`;
+    mensagem += `*TOTAL: ${formatarMoeda(totalGeral)}*%0A%0A`;
+    mensagem += `*PAGAMENTO:* ${formaPagamento}%0A`;
+
+    if (formaPagamento === "Dinheiro") {
+        mensagem += `*TROCO:* ${troco}%0A`;
     }
 
-    const telefone = "5551981061618";
-    const url = `https://api.whatsapp.com/send?phone=${telefone}&text=${encodeURIComponent(mensagem)}`;
+    mensagem += `%0A_Pedido realizado pelo site._`;
 
-    window.open(url, "_blank");
+    const numeroWhatsApp = "5551981061618";
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensagem}`;
+
+    window.open(urlWhatsApp, "_blank");
 });
-
-function mostrarMensagem(texto) {
-    const msg = document.createElement("div");
-    msg.className = "mensagem-sucesso";
-    msg.textContent = texto;
-    document.body.appendChild(msg);
-    setTimeout(() => msg.remove(), 3000);
-}
