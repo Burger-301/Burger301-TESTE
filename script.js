@@ -575,56 +575,57 @@ formularioPedido.addEventListener("submit", function (evento) {
         return;
     }
 
-    if (carrinho.length === 0) {
-        alert("Adicione pelo menos um produto ao pedido.");
-        return;
-    }
-
     const nome = document.getElementById("nome").value.trim();
     const torre = document.getElementById("torre").value.trim();
     const apartamento = document.getElementById("apartamento").value.trim();
-    const pagamentoSelecionado = document.querySelector('input[name="pagamento"]:checked');
-    const formaPagamento = pagamentoSelecionado ? pagamentoSelecionado.value : "Não informado";
-    const troco = document.getElementById("troco").value.trim() || "Não precisa";
+    const pagamento = document.querySelector('input[name="pagamento"]:checked')?.value;
+    const troco = document.getElementById("troco").value.trim();
+    const observacaoGeral = document.getElementById("observacao").value.trim();
 
-    let mensagem = `🍔 *NOVO PEDIDO - BURGER 301*%0A%0A`;
-    mensagem += `Cliente: ${nome}%0A`;
-    mensagem += `Torre: ${torre}%0A`;
-    mensagem += `Apartamento: ${apartamento}%0A%0A`;
-    mensagem += `*PEDIDO*%0A%0A`;
+    if (!nome || !torre || !apartamento || !pagamento) {
+        mostrarMensagem("Por favor, preencha todos os campos obrigatórios (*).");
+        return;
+    }
+
+    let mensagem = `🍔 *NOVO PEDIDO - BURGER 301*\n\n`;
+    mensagem += `👤 *Cliente:* ${nome}\n`;
+    mensagem += `🏢 *Endereço:* Torre ${torre}, Apto ${apartamento}\n`;
+    mensagem += `💳 *Pagamento:* ${pagamento}\n`;
+
+    if (pagamento === "Dinheiro" && troco) {
+        mensagem += `💵 *Troco para:* ${troco}\n`;
+    }
+
+    if (observacaoGeral) {
+        mensagem += `📝 *Obs. Geral:* ${observacaoGeral}\n`;
+    }
+
+    mensagem += `\n🛒 *ITENS DO PEDIDO:*\n`;
 
     let totalGeral = 0;
 
-    carrinho.forEach(item => {
+    carrinho.forEach((item, index) => {
         const subtotalItem = item.valorUnitario * item.quantidade;
         totalGeral += subtotalItem;
 
-        mensagem += `${item.quantidade}x ${item.nome} - ${formatarMoeda(subtotalItem)}%0A`;
+        mensagem += `\n${index + 1}. *${item.quantidade}x ${item.nome}* — ${formatarMoeda(subtotalItem)}\n`;
 
         if (item.adicionais && item.adicionais.length > 0) {
             item.adicionais.forEach(adicional => {
-                mensagem += `   + ${adicional.nome} - ${formatarMoeda(adicional.preco)}%0A`;
+                mensagem += `   + ${adicional.nome} (${formatarMoeda(adicional.preco)})\n`;
             });
         }
 
         if (item.observacao) {
-            mensagem += `   Obs: ${item.observacao}%0A`;
+            mensagem += `   _Obs: ${item.observacao}_\n`;
         }
-
-        mensagem += `%0A`;
     });
 
-    mensagem += `*TOTAL: ${formatarMoeda(totalGeral)}*%0A%0A`;
-    mensagem += `*PAGAMENTO:* ${formaPagamento}%0A`;
-
-    if (formaPagamento === "Dinheiro") {
-        mensagem += `*TROCO:* ${troco}%0A`;
-    }
-
-    mensagem += `%0A_Pedido realizado pelo site._`;
+    mensagem += `\n💰 *VALOR TOTAL: ${formatarMoeda(totalGeral)}*\n`;
+    mensagem += `📍 *Entrega na entrada da torre.*`;
 
     const numeroWhatsApp = "5551981061618";
-    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensagem}`;
+    const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
 
     window.open(urlWhatsApp, "_blank");
 });
