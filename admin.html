@@ -68,8 +68,8 @@
             border: none;
             width: auto;
         }
-        .ativo { background-color: #22c55e; color: white; } /* Verde para Aberto */
-        .inativo { background-color: #ef4444; color: white; } /* Vermelho para Fechado */
+        .ativo { background-color: #22c55e; color: white; } /* Verde */
+        .inativo { background-color: #ef4444; color: white; } /* Vermelho */
         
         .secao-painel {
             background: #252525;
@@ -228,11 +228,16 @@
                     await setDoc(docRefConfig, { aberto: true });
                     atualizarBotaoLoja(true);
                 }
+            }, (error) => {
+                console.error("Erro config:", error);
             });
 
-            // Ouve lista de produtos em tempo real
+            // Ouve lista de produtos em tempo real com tratamento de erro
             onSnapshot(collection(db, "produtos"), (snapshot) => {
                 renderizarListaAdmin(snapshot);
+            }, (error) => {
+                console.error("Erro produtos:", error);
+                document.getElementById("lista-gestao-produtos").innerHTML = "<p style='font-size:13px; color:#ef4444;'>Erro de permissão no Firebase. Verifique as Regras de Segurança do Firestore.</p>";
             });
         }
 
@@ -319,7 +324,7 @@
                 item.className = "item-admin-produto";
                 item.innerHTML = `
                     <div class="item-topo">
-                        <span><b>${p.nome}</b> — R$ ${p.preco.toFixed(2)} (${p.categoria})</span>
+                        <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
                     </div>
                     <div class="item-botoes">
                         <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle" data-id="${id}" data-esgotado="${p.esgotado}">
