@@ -2,6 +2,7 @@
   "name": "Burger 301 - Painel Admin",
   "short_name": "Admin 301",
   "start_url": "admin.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#f28c28",
