@@ -175,12 +175,16 @@
 <body>
 
     <div class="container">
-        <!-- TELA DE LOGIN COM E-MAIL OCULTO E APENAS SENHA -->
+        <!-- TELA DE LOGIN COM CAMPO DE E-MAIL VISÍVEL E LIMPO -->
         <div id="tela-login">
             <h2>🔒 Área Restrita</h2>
             <form id="form-login">
                 <div class="campo">
-                    <label for="senha">Palavra-passe do Painel:</label>
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" placeholder="Digite o e-mail" autocomplete="email" required>
+                </div>
+                <div class="campo">
+                    <label for="senha">Palavra-passe:</label>
                     <input type="password" id="senha" name="password" placeholder="Digite a senha" autocomplete="current-password" required>
                 </div>
                 <button type="submit" id="btn-entrar">Entrar no Painel</button>
@@ -299,7 +303,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT DO PAINEL ADMIN COM FIREBASE AUTH (E-MAIL FIXO INTERNAMENTE) -->
+    <!-- SCRIPT DO PAINEL ADMIN COM AUTENTICAÇÃO DO FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -318,12 +322,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // E-mail fixo do administrador guardado de forma interna e segura
-        const EMAIL_ADMIN = "burger301poema@gmail.com";
-
         const telaLogin = document.getElementById("tela-login");
         const painelControle = document.getElementById("painel-controle");
         const formLogin = document.getElementById("form-login");
+        const inputEmail = document.getElementById("email");
         const inputSenha = document.getElementById("senha");
         const erroLogin = document.getElementById("erro-login");
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
@@ -357,19 +359,19 @@
             conteudoProdutos.style.display = "none";
         });
 
-        // Validação de login com o e-mail embutido e a senha digitada
+        // Validação de login lendo os campos do formulário
         formLogin.addEventListener("submit", async (e) => {
             e.preventDefault();
             erroLogin.textContent = "";
 
             try {
-                await signInWithEmailAndPassword(auth, EMAIL_ADMIN, inputSenha.value);
+                await signInWithEmailAndPassword(auth, inputEmail.value.trim(), inputSenha.value);
                 telaLogin.style.display = "none";
                 painelControle.style.display = "block";
                 iniciarOuvintesAdmin();
             } catch (error) {
                 console.error("Erro no login:", error);
-                erroLogin.textContent = "Palavra-passe incorreta!";
+                erroLogin.textContent = "E-mail ou palavra-passe incorretos!";
             }
         });
 
@@ -378,6 +380,7 @@
                 await signOut(auth);
                 painelControle.style.display = "none";
                 telaLogin.style.display = "block";
+                inputEmail.value = "";
                 inputSenha.value = "";
                 erroLogin.textContent = "";
             } catch (error) {
