@@ -1,44 +1,49 @@
 /* =========================================
-   BURGER 301 - SISTEMA DE PEDIDOS
+   BURGER 301 - SISTEMA DE PEDIDOS COM FIREBASE
 ========================================= */
+
+// Importações do Firebase
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+// Configuração do Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
+    authDomain: "burger301-79148.firebaseapp.com",
+    projectId: "burger301-79148",
+    storageBucket: "burger301-79148.firebasestorage.app",
+    messagingSenderId: "681050351563",
+    appId: "1:681050351563:web:7712d7ef3911365a2f784e"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 let carrinho = [];
 let produtoAtual = null;
 let quantidadeAtual = 1;
 
+// Variável que guarda o estado vindo do painel admin em tempo real
+let statusLojaAdmin = true; 
+
+// Ouve em tempo real as alterações feitas no painel admin
+const docRefConfig = doc(db, "configuracoes", "loja");
+onSnapshot(docRefConfig, (docSnap) => {
+    if (docSnap.exists()) {
+        statusLojaAdmin = docSnap.data().aberto;
+        atualizarStatusHeader();
+        atualizarEstoqueGeral();
+    }
+});
+
 /* =========================================
    CONTROLE RÁPIDO DO SITE
 ========================================= */
 
-// 1. ATIVAR / DESATIVAR BLOQUEIO DE HORÁRIO
-// true  = Bloqueia automaticamente fora de Sexta/Sábado (19h30 às 22h)
-// false = DESATIVA o bloqueio (permite fazer pedidos/testes a qualquer hora)
 const bloqueioHorarioAtivo = false;
 
-// 2. LISTA DE PRODUTOS ESGOTADOS (Hambúrgueres e Porções)
-const produtosEsgotados = [
-    // "Poema Kids",
-    // "Smash 301",
-    // "Clássico da Casa",
-    // "Du'Chef",
-    // "Poema Tropical",
-    // "Porção de Fritas",
-    // "Porção de Onion Rings",
-    // "Fritas Feliz"
-];
-
-// 3. LISTA DE ADICIONAIS ESGOTADOS
-const adicionaisEsgotados = [
-    // "Bacon",
-    // "Cebola caramelizada",
-    // "Abacaxi grelhado",
-    // "Blend bovino 150g",
-    // "Smash bovino 75g",
-    // "Queijo cheddar",
-    // "Queijo mussarela",
-    // "Anéis de cebola",
-    // "Pote de maionese extra"
-];
+const produtosEsgotados = [];
+const adicionaisEsgotados = [];
 
 /* =========================================
    FUNÇÃO AUTOMÁTICA DE ATUALIZAÇÃO DE ESTOQUE
@@ -104,7 +109,6 @@ function atualizarEstoqueGeral() {
         const labelAdicional = checkbox.closest(".adicional");
 
         if (adicionaisEsgotados.includes(nomeAdicional)) {
-            // Marca adicional como ESGOTADO
             checkbox.disabled = true;
             checkbox.checked = false;
 
@@ -119,7 +123,6 @@ function atualizarEstoqueGeral() {
                 }
             }
         } else {
-            // Restaura adicional para DISPONÍVEL
             checkbox.disabled = false;
 
             if (labelAdicional) {
@@ -137,32 +140,18 @@ function atualizarEstoqueGeral() {
 }
 
 /* =========================================
-   CONTROLE AUTOMÁTICO DE HORÁRIO
+   CONTROLE DE ABERTURA (BASEADO NO PAINEL ADMIN)
 ========================================= */
 
 function pedidosEstaoAbertos() {
-    if (!bloqueioHorarioAtivo) {
-        return true;
+    if (!statusLojaAdmin) {
+        return false;
     }
-
-    const agora = new Date();
-    const dia = agora.getDay(); // 5 = Sexta, 6 = Sábado
-    const hora = agora.getHours();
-    const minutos = agora.getMinutes();
-
-    const horarioAtual = hora * 60 + minutos;
-
-    const inicio = 19 * 60 + 30; // 19h30
-    const fim = 22 * 60;        // 22h00
-
-    const diaValido = (dia === 5 || dia === 6);
-    const horarioValido = (horarioAtual >= inicio && horarioAtual < fim);
-
-    return diaValido && horarioValido;
+    return true;
 }
 
 function mostrarAvisoForaDoExpediente() {
-    mostrarMensagem("🍔 Pedidos fechados no momento! Nosso atendimento funciona às sextas e sábados, das 19h30 às 22h. Burger 301 agradece pela compreensão! ❤️");
+    mostrarMensagem("🍔 A loja está fechada no momento pelo painel administrativo. Burger 301 agradece a compreensão! ❤️");
 }
 
 /* =========================================
@@ -268,7 +257,6 @@ botoesAdicionar.forEach(function (botao) {
         const nome = botao.dataset.produto;
         const preco = parseFloat(botao.dataset.preco);
 
-        // CAPTURA A DESCRIÇÃO DIRETO DO CARDÁPIO (HTML)
         const cardProduto = botao.closest(".produto");
         let descricaoCapturada = "";
         if (cardProduto) {
@@ -470,7 +458,6 @@ function atualizarCarrinho() {
     resumoCarrinho.textContent = `${quantidadeItens} ${quantidadeItens === 1 ? "item" : "itens"} • ${formatarMoeda(total)}`;
     finalizarPedido.disabled = false;
     
-    // Se a seção de dados do cliente NÃO estiver visível, mostra o flutuante
     if (!dadosPedido.classList.contains("visivel")) {
         carrinhoFlutuante.classList.add("visivel");
     }
@@ -516,7 +503,6 @@ function configurarBotoesCarrinho() {
 abrirCarrinho.addEventListener("click", () => painelCarrinho.classList.add("aberto"));
 continuarComprando.addEventListener("click", () => painelCarrinho.classList.remove("aberto"));
 
-// FINALIZAR PEDIDO: Esconde o painel do carrinho, esconde o flutuante e mostra a tela de dados
 finalizarPedido.addEventListener("click", function () {
     if (carrinho.length === 0) return;
 
@@ -527,7 +513,6 @@ finalizarPedido.addEventListener("click", function () {
 
     painelCarrinho.classList.remove("aberto");
     
-    // FAZ O CARRINHO FLUTUANTE SUMIR
     if (carrinhoFlutuante) {
         carrinhoFlutuante.classList.remove("visivel");
     }
@@ -537,12 +522,10 @@ finalizarPedido.addEventListener("click", function () {
     setTimeout(() => dadosPedido.scrollIntoView({ behavior: "smooth" }), 100);
 });
 
-// BOTÃO CONTINUAR COMPRANDO NA TELA DE DADOS: Esconde a tela de dados e traz o flutuante de volta (se houver itens)
 if (botaoVoltarDados) {
     botaoVoltarDados.addEventListener("click", function () {
         dadosPedido.classList.remove("visivel");
 
-        // Se ainda tem itens no carrinho, mostra o flutuante novamente
         if (carrinho.length > 0 && carrinhoFlutuante) {
             carrinhoFlutuante.classList.add("visivel");
         }
@@ -551,7 +534,6 @@ if (botaoVoltarDados) {
     });
 }
 
-/* CAMPO DE TROCO DINÂMICO */
 document.querySelectorAll('input[name="pagamento"]').forEach(radio => {
     radio.addEventListener("change", function () {
         const campoTroco = document.getElementById("campo-troco");
