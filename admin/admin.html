@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo - Burger 301</title>
+
+    <!-- CONFIGURAÇÕES DE PWA (APLICAÇÃO INSTALÁVEL) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f28c28">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Admin 301">
+    
+    <!-- FAVICON -->
+    <link rel="icon" href="../imagens/icone.png" type="image/png">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -123,7 +134,7 @@
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
 
-        /* ESTILOS DA JANELA FLUTUANTE DE AJUDA */
+        /* JANELA FLUTUANTE DE AJUDA */
         #modal-ajuda-img {
             display: none;
             position: fixed;
@@ -264,18 +275,18 @@
         </div>
     </div>
 
-    <!-- JANELA FLUTUANTE (MODAL) DE AJUDA DA IMAGEM -->
+    <!-- MODAL DE AJUDA DE IMAGEM -->
     <div id="modal-ajuda-img">
         <div class="modal-ajuda-conteudo">
             <button type="button" id="fechar-ajuda-img" class="btn-fechar-ajuda">✕</button>
             <h3 style="color: #f28c28; margin-top: 0;">💡 Como adicionar imagens?</h3>
             <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
-                Como o site está hospedado no GitHub Pages, os ficheiros de imagem devem ser colocados diretamente na pasta <b>imagens/</b> do seu repositório.
+                Como o site está hospedado no GitHub Pages, os ficheiros de imagem devem ser colocados diretamente na pasta <b>imagens/</b> da raiz.
             </p>
             <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
-                <b>Passo a passo recomendado:</b><br>
+                <b>Passo a passo:</b><br>
                 1. Faça o upload da sua imagem PNG para a pasta <code>imagens/</code> no GitHub.<br>
-                2. No campo de imagem, digite o caminho exato do ficheiro, por exemplo:<br>
+                2. No campo de imagem do painel, digite o caminho exato:<br>
                 <code>imagens/nome-da-foto.png</code>
             </p>
         </div>
@@ -308,26 +319,14 @@
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
-        // Lógica do Modal de Ajuda de Imagem
         const btnAjudaImg = document.getElementById("btn-ajuda-img");
         const modalAjudaImg = document.getElementById("modal-ajuda-img");
         const fecharAjudaImg = document.getElementById("fechar-ajuda-img");
 
-        btnAjudaImg.addEventListener("click", () => {
-            modalAjudaImg.style.display = "flex";
-        });
+        btnAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "flex");
+        fecharAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "none");
+        modalAjudaImg.addEventListener("click", (e) => { if (e.target === modalAjudaImg) modalAjudaImg.style.display = "none"; });
 
-        fecharAjudaImg.addEventListener("click", () => {
-            modalAjudaImg.style.display = "none";
-        });
-
-        modalAjudaImg.addEventListener("click", (e) => {
-            if (e.target === modalAjudaImg) {
-                modalAjudaImg.style.display = "none";
-            }
-        });
-
-        // Controlo de Abas
         const tabProdutos = document.getElementById("tab-produtos");
         const tabAdicionais = document.getElementById("tab-adicionais");
         const conteudoProdutos = document.getElementById("conteudo-produtos");
@@ -369,14 +368,14 @@
         async function verificarEPopularDados(snapshotProd, snapshotAdic) {
             if (snapshotProd.empty) {
                 const produtosIniciais = [
-                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "imagens/poema-kids.jpg", esgotado: false },
-                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "imagens/smash-301.jpg", esgotado: false },
-                    { nome: "Clássico da Casa", categoria: "hamburgueres", preco: 32.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.", imagem: "imagens/classico-da-casa.jpg", esgotado: false },
-                    { nome: "Du'Chef", categoria: "hamburgueres", preco: 35.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.", imagem: "imagens/duchef.jpg", esgotado: false },
-                    { nome: "Poema Tropical", categoria: "hamburgueres", preco: 37.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.", imagem: "imagens/poema-tropical.jpg", esgotado: false },
-                    { nome: "Porção de Fritas", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas.jpg", esgotado: false },
-                    { nome: "Porção de Onion Rings", categoria: "porcoes", preco: 10.00, descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/onion-rings.jpg", esgotado: false },
-                    { nome: "Fritas Feliz", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas-feliz.jpg", esgotado: false }
+                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "../imagens/poema-kids.jpg", esgotado: false },
+                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false },
+                    { nome: "Clássico da Casa", categoria: "hamburgueres", preco: 32.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.", imagem: "../imagens/classico-da-casa.jpg", esgotado: false },
+                    { nome: "Du'Chef", categoria: "hamburgueres", preco: 35.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.", imagem: "../imagens/duchef.jpg", esgotado: false },
+                    { nome: "Poema Tropical", categoria: "hamburgueres", preco: 37.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.", imagem: "../imagens/poema-tropical.jpg", esgotado: false },
+                    { nome: "Porção de Fritas", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/fritas.jpg", esgotado: false },
+                    { nome: "Porção de Onion Rings", categoria: "porcoes", preco: 10.00, descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/onion-rings.jpg", esgotado: false },
+                    { nome: "Fritas Feliz", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/fritas-feliz.jpg", esgotado: false }
                 ];
                 for (const prod of produtosIniciais) {
                     await addDoc(collection(db, "produtos"), prod);
@@ -415,15 +414,8 @@
             const snapAdic = await getDocs(collection(db, "adicionais"));
             await verificarEPopularDados(snapProd, snapAdic);
 
-            // Ouvinte de Produtos
-            onSnapshot(collection(db, "produtos"), (snapshot) => {
-                renderizarListaProdutos(snapshot);
-            });
-
-            // Ouvinte de Adicionais
-            onSnapshot(collection(db, "adicionais"), (snapshot) => {
-                renderizarListaAdicionais(snapshot);
-            });
+            onSnapshot(collection(db, "produtos"), (snapshot) => renderizarListaProdutos(snapshot));
+            onSnapshot(collection(db, "adicionais"), (snapshot) => renderizarListaAdicionais(snapshot));
         }
 
         function atualizarBotaoLoja(aberto) {
@@ -444,7 +436,6 @@
             mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
         });
 
-        // Gestão de Produtos
         const btnSalvarProduto = document.getElementById("btn-salvar-produto");
         const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
         const tituloFormProduto = document.getElementById("titulo-form-produto");
@@ -538,7 +529,7 @@
                         document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
                         document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
 
-                        tituloFormProduto.textContent = "✏️ Editar Produto";
+                        tituloFormProduto.textContent = "✏️️ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -547,7 +538,6 @@
             });
         }
 
-        // Gestão de Adicionais
         const btnSalvarAdicional = document.getElementById("btn-salvar-adicional");
         const btnCancelarEdicaoAdic = document.getElementById("btn-cancelar-edicao-adic");
         const tituloFormAdicional = document.getElementById("titulo-form-adicional");
