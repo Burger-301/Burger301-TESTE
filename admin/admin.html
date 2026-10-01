@@ -175,13 +175,13 @@
 <body>
 
     <div class="container">
-        <!-- TELA DE LOGIN COM SUPORTE A SALVAR SENHA E ASSINATURA -->
+        <!-- TELA DE LOGIN COM FIREBASE AUTH -->
         <div id="tela-login">
             <h2>🔒 Área Restrita</h2>
             <form id="form-login">
                 <div class="campo">
-                    <label for="usuario">Usuário:</label>
-                    <input type="text" id="usuario" name="username" value="admin" autocomplete="username" readonly style="opacity: 0.7; cursor: not-allowed;">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" value="burger301poema@gmail.com" autocomplete="email" required>
                 </div>
                 <div class="campo">
                     <label for="senha">Palavra-passe:</label>
@@ -303,10 +303,11 @@
         </div>
     </div>
 
-    <!-- SCRIPT DO PAINEL ADMIN -->
+    <!-- SCRIPT DO PAINEL ADMIN COM FIREBASE AUTH -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
@@ -319,10 +320,12 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
         const telaLogin = document.getElementById("tela-login");
         const painelControle = document.getElementById("painel-controle");
         const formLogin = document.getElementById("form-login");
+        const inputEmail = document.getElementById("email");
         const inputSenha = document.getElementById("senha");
         const erroLogin = document.getElementById("erro-login");
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
@@ -356,26 +359,32 @@
             conteudoProdutos.style.display = "none";
         });
 
-        // Validação de login com senha codificada (evita texto plano visível no código)
-        formLogin.addEventListener("submit", (e) => {
+        // Validação de login utilizando o Firebase Authentication oficial
+        formLogin.addEventListener("submit", async (e) => {
             e.preventDefault();
-            // Senha cifrada em Base64 correspondente a: b3016118Jc*
-            const senhaCorretaHash = "YjMwMTYxMThKYyo=";
+            erroLogin.textContent = "";
 
-            if (btoa(inputSenha.value) === senhaCorretaHash) {
+            try {
+                await signInWithEmailAndPassword(auth, inputEmail.value.trim(), inputSenha.value);
                 telaLogin.style.display = "none";
                 painelControle.style.display = "block";
                 iniciarOuvintesAdmin();
-            } else {
-                erroLogin.textContent = "Palavra-passe incorreta!";
+            } catch (error) {
+                console.error("Erro no login:", error);
+                erroLogin.textContent = "E-mail ou palavra-passe incorretos!";
             }
         });
 
-        btnSair.addEventListener("click", () => {
-            painelControle.style.display = "none";
-            telaLogin.style.display = "block";
-            inputSenha.value = "";
-            erroLogin.textContent = "";
+        btnSair.addEventListener("click", async () => {
+            try {
+                await signOut(auth);
+                painelControle.style.display = "none";
+                telaLogin.style.display = "block";
+                inputSenha.value = "";
+                erroLogin.textContent = "";
+            } catch (error) {
+                console.error("Erro ao sair:", error);
+            }
         });
 
         const docRefConfig = doc(db, "configuracoes", "loja");
