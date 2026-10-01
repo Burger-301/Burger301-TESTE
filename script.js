@@ -22,7 +22,7 @@ let produtoAtual = null;
 let quantidadeAtual = 1;
 let statusLojaAdmin = true; 
 
-// Lista de produtos padrão garantida (evita que a tela fique em branco caso o Firebase bloqueie)
+// Lista de produtos padrão garantida (fallback)
 const produtosPadraoSeguro = [
     {
         nome: "Poema Kids",
@@ -98,6 +98,62 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     }
 });
 
+// Ouve os produtos do Firebase em tempo real
+try {
+    onSnapshot(collection(db, "produtos"), (snapshot) => {
+        if (snapshot.empty) {
+            renderizarCardapio(produtosPadraoSeguro);
+        } else {
+            const listaDinamica = [];
+            snapshot.forEach((docSnap) => {
+                listaDinamica.push(docSnap.data());
+            });
+            renderizarCardapio(listaDinamica);
+        }
+    }, () => {
+        renderizarCardapio(produtosPadraoSeguro);
+    });
+} catch (e) {
+    renderizarCardapio(produtosPadraoSeguro);
+}
+
+// Ouve os adicionais do Firebase em tempo real (Atualiza disponibilidade)
+try {
+    onSnapshot(collection(db, "adicionais"), (snapshot) => {
+        const listaAdicionaisContainer = document.querySelector(".lista-adicionais");
+        if (!listaAdicionaisContainer) return;
+
+        listaAdicionaisContainer.innerHTML = "";
+
+        snapshot.forEach((docSnap) => {
+            const a = docSnap.data();
+            const label = document.createElement("label");
+            label.className = "adicional";
+            
+            if (a.esgotado) {
+                label.style.opacity = "0.5";
+                label.style.cursor = "not-allowed";
+            }
+
+            const apenasPorcao = a.nome === "Pote de maionese extra" ? 'data-apenas-porcao="true"' : '';
+
+            label.innerHTML = `
+                <input type="checkbox" name="adicional" value="${a.nome}" data-preco="${a.preco}" ${a.esgotado ? 'disabled' : ''} ${apenasPorcao}>
+                <span style="${a.esgotado ? 'text-decoration: line-through;' : ''}">${a.nome}${a.esgotado ? ' (ESGOTADO)' : ''}</span>
+                <strong>+ ${formatarMoeda(a.preco)}</strong>
+            `;
+            listaAdicionaisContainer.appendChild(label);
+        });
+
+        // Reatribui evento para atualizar total do modal ao mudar adicionais
+        document.querySelectorAll('#modal-produto input[name="adicional"]').forEach(c => {
+            c.addEventListener("change", atualizarTotalModal);
+        });
+    });
+} catch (e) {
+    console.error("Erro ao carregar adicionais:", e);
+}
+
 // Função para desenhar os produtos no HTML
 function renderizarCardapio(produtos) {
     const hamburgueresContainer = document.getElementById("lista-hamburgueres");
@@ -138,25 +194,6 @@ function renderizarCardapio(produtos) {
     });
 
     reativarEventosBotoes();
-}
-
-// Tenta escutar o Firestore, mas usa o cardápio padrão se houver qualquer bloqueio
-try {
-    onSnapshot(collection(db, "produtos"), (snapshot) => {
-        if (snapshot.empty) {
-            renderizarCardapio(produtosPadraoSeguro);
-        } else {
-            const listaDinamica = [];
-            snapshot.forEach((docSnap) => {
-                listaDinamica.push(docSnap.data());
-            });
-            renderizarCardapio(listaDinamica);
-        }
-    }, (error) => {
-        renderizarCardapio(produtosPadraoSeguro);
-    });
-} catch (e) {
-    renderizarCardapio(produtosPadraoSeguro);
 }
 
 function pedidosEstaoAbertos() {
@@ -302,10 +339,6 @@ function calcularTotalProduto() {
 function atualizarTotalModal() {
     modalTotal.textContent = formatarMoeda(calcularTotalProduto());
 }
-
-document.querySelectorAll('#modal-produto input[name="adicional"]').forEach(c => {
-    c.addEventListener("change", atualizarTotalModal);
-});
 
 function ajustarAdicionaisPorPorcao(nomeProduto) {
     const nomesPorcoes = new Set(["Porção de Fritas", "Porção de Onion Rings", "Fritas Feliz"]);
