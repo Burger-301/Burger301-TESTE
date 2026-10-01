@@ -68,8 +68,8 @@
             border: none;
             width: auto;
         }
-        .ativo { background-color: #22c55e; color: white; }
-        .inativo { background-color: #ef4444; color: white; }
+        .ativo { background-color: #22c55e; color: white; } /* Verde para Aberto */
+        .inativo { background-color: #ef4444; color: white; } /* Vermelho para Fechado */
         
         .secao-painel {
             background: #252525;
@@ -80,19 +80,26 @@
         .secao-painel h3 { color: #f28c28; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 8px; }
         
         .lista-admin-produtos {
-            max-height: 200px;
+            max-height: 280px;
             overflow-y: auto;
             margin-top: 10px;
         }
         .item-admin-produto {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .item-topo {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #2a2a2a;
-            padding: 8px 10px;
-            border-radius: 5px;
             margin-bottom: 8px;
-            font-size: 14px;
+        }
+        .item-botoes {
+            display: flex;
+            gap: 5px;
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
     </style>
@@ -121,9 +128,10 @@
                 <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
             </div>
 
-            <!-- ADICIONAR NOVO PRODUTO -->
+            <!-- ADICIONAR / EDITAR PRODUTO -->
             <div class="secao-painel">
-                <h3>➕ Adicionar Novo Produto</h3>
+                <h3 id="titulo-form-produto">➕ Adicionar Novo Produto</h3>
+                <input type="hidden" id="edit-id" value="">
                 <div class="campo">
                     <label>Nome do Produto:</label>
                     <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
@@ -145,15 +153,16 @@
                 </div>
                 <div class="campo">
                     <label>Imagem (Nome do ficheiro):</label>
-                    <input type="text" id="novo-imagem" placeholder="Ex: imagens/duchef.jpg">
+                    <input type="text" id="novo-imagem" placeholder="Ex: imagens/duchef.jpg" value="imagens/">
                 </div>
                 <button id="btn-salvar-produto">Cadastrar Produto</button>
+                <button id="btn-cancelar-edicao" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
             </div>
 
-            <!-- GESTÃO DE ESTOQUE / DISPONIBILIDADE -->
+            <!-- GESTÃO DE ESTOQUE / DISPONIBILIDADE / EDITAR / EXCLUIR -->
             <div class="secao-painel">
-                <h3>📦 Disponibilidade de Produtos</h3>
-                <p style="font-size: 12px; color: #aaa; margin-top: 0;">Clique para alternar entre Disponível e Esgotado:</p>
+                <h3>📦 Gerenciar Produtos</h3>
+                <p style="font-size: 12px; color: #aaa; margin-top: 0;">Alterne a disponibilidade, edite ou exclua produtos:</p>
                 <div id="lista-gestao-produtos" class="lista-admin-produtos">
                     <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
                 </div>
@@ -195,8 +204,7 @@
             if (inputSenha.value === SENHA_ADMIN) {
                 telaLogin.style.display = "none";
                 painelControle.style.display = "block";
-                carregarEstadoLoja();
-                carregarProdutosAdmin();
+                iniciarOuvintesAdmin();
             } else {
                 erroLogin.textContent = "Palavra-passe incorreta!";
             }
@@ -209,38 +217,50 @@
             erroLogin.textContent = "";
         });
 
-        // Loja Aberta/Fechada
         const docRefConfig = doc(db, "configuracoes", "loja");
-        async function carregarEstadoLoja() {
-            const docSnap = await getDoc(docRefConfig);
-            if (docSnap.exists()) {
-                atualizarBotaoLoja(docSnap.data().aberto);
-            } else {
-                await setDoc(docRefConfig, { aberto: true });
-                atualizarBotaoLoja(true);
-            }
+        
+        function iniciarOuvintesAdmin() {
+            // Ouve status da loja em tempo real
+            onSnapshot(docRefConfig, async (docSnap) => {
+                if (docSnap.exists()) {
+                    atualizarBotaoLoja(docSnap.data().aberto);
+                } else {
+                    await setDoc(docRefConfig, { aberto: true });
+                    atualizarBotaoLoja(true);
+                }
+            });
+
+            // Ouve lista de produtos em tempo real
+            onSnapshot(collection(db, "produtos"), (snapshot) => {
+                renderizarListaAdmin(snapshot);
+            });
         }
 
         function atualizarBotaoLoja(aberto) {
             if (aberto) {
                 btnToggleLoja.textContent = "Aberto";
-                btnToggleLoja.className = "btn-status ativo";
+                btnToggleLoja.className = "btn-status ativo"; // Verde
             } else {
                 btnToggleLoja.textContent = "Fechado";
-                btnToggleLoja.className = "btn-status inativo";
+                btnToggleLoja.className = "btn-status inativo"; // Vermelho
             }
         }
 
         btnToggleLoja.addEventListener("click", async () => {
             const docSnap = await getDoc(docRefConfig);
-            const novoEstado = !docSnap.data().aberto;
+            const estadoAtual = docSnap.exists() ? docSnap.data().aberto : true;
+            const novoEstado = !estadoAtual;
             await updateDoc(docRefConfig, { aberto: novoEstado });
-            atualizarBotaoLoja(novoEstado);
-            mostrarAviso("Status da loja atualizado!");
+            mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
         });
 
-        // Adicionar Novo Produto
-        document.getElementById("btn-salvar-produto").addEventListener("click", async () => {
+        const btnSalvarProduto = document.getElementById("btn-salvar-produto");
+        const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
+        const tituloFormProduto = document.getElementById("titulo-form-produto");
+        const editIdInput = document.getElementById("edit-id");
+
+        btnSalvarProduto.addEventListener("click", async () => {
+            const idEdicao = editIdInput.value;
             const nome = document.getElementById("novo-nome").value.trim();
             const categoria = document.getElementById("novo-categoria").value;
             const preco = parseFloat(document.getElementById("novo-preco").value.replace(",", "."));
@@ -252,67 +272,92 @@
                 return;
             }
 
-            await addDoc(collection(db, "produtos"), {
-                nome, categoria, preco, descricao, imagem, esgotado: false
-            });
+            if (idEdicao) {
+                await updateDoc(doc(db, "produtos", idEdicao), {
+                    nome, categoria, preco, descricao, imagem
+                });
+                mostrarAviso("Produto atualizado com sucesso!");
+                limparFormulario();
+            } else {
+                await addDoc(collection(db, "produtos"), {
+                    nome, categoria, preco, descricao, imagem, esgotado: false
+                });
+                mostrarAviso("Produto adicionado com sucesso!");
+                limparFormulario();
+            }
+        });
 
+        btnCancelarEdicao.addEventListener("click", () => {
+            limparFormulario();
+        });
+
+        function limparFormulario() {
+            editIdInput.value = "";
             document.getElementById("novo-nome").value = "";
             document.getElementById("novo-preco").value = "";
             document.getElementById("novo-descricao").value = "";
-            document.getElementById("novo-imagem").value = "";
+            document.getElementById("novo-imagem").value = "imagens/";
+            tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
+            btnSalvarProduto.textContent = "Cadastrar Produto";
+            btnCancelarEdicao.style.display = "none";
+        }
 
-            mostrarAviso("Produto adicionado com sucesso!");
-            carregarProdutosAdmin();
-        });
-
-        // Gestão de Estoque (Esgotado / Disponível)
-        async function carregarProdutosAdmin() {
+        function renderizarListaAdmin(snapshot) {
             const listaDiv = document.getElementById("lista-gestao-produtos");
-            listaDiv.innerHTML = "A carregar...";
-            
-            const querySnapshot = await getDocs(collection(db, "produtos"));
             listaDiv.innerHTML = "";
 
-            if (querySnapshot.empty) {
+            if (snapshot.empty) {
                 listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum produto cadastrado.</p>";
                 return;
             }
 
-            querySnapshot.forEach((docSnap) => {
+            snapshot.forEach((docSnap) => {
                 const p = docSnap.data();
                 const id = docSnap.id;
 
                 const item = document.createElement("div");
                 item.className = "item-admin-produto";
                 item.innerHTML = `
-                    <span><b>${p.nome}</b> — R$ ${p.preco.toFixed(2)}</span>
-                    <div>
-                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 4px 10px; font-size: 12px;" data-id="${id}" data-esgotado="${p.esgotado}">
-                            ${p.esgotado ? 'Esgotado' : 'Disponível'}
+                    <div class="item-topo">
+                        <span><b>${p.nome}</b> — R$ ${p.preco.toFixed(2)} (${p.categoria})</span>
+                    </div>
+                    <div class="item-botoes">
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle" data-id="${id}" data-esgotado="${p.esgotado}">
+                            ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button style="background: #ef4444; padding: 4px 8px; font-size: 12px; margin-left: 5px; border-radius:4px; border:none; color:white; cursor:pointer;" data-apagar="${id}">🗑️</button>
+                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
+                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
             });
 
-            // Eventos de alterar estoque
-            listaDiv.querySelectorAll("[data-id]").forEach(btn => {
+            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
                 btn.addEventListener("click", async (e) => {
+                    const acao = e.target.dataset.acao;
                     const id = e.target.dataset.id;
-                    const esgotadoAtual = e.target.dataset.esgotado === "true";
-                    await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
-                    carregarProdutosAdmin();
-                });
-            });
 
-            // Eventos de apagar produto
-            listaDiv.querySelectorAll("[data-apagar]").forEach(btn => {
-                btn.addEventListener("click", async (e) => {
-                    if (confirm("Tem certeza que deseja apagar este produto?")) {
-                        await deleteDoc(doc(db, "produtos", e.target.dataset.apagar));
-                        carregarProdutosAdmin();
-                        mostrarAviso("Produto removido!");
+                    if (acao === "toggle") {
+                        const esgotadoAtual = e.target.dataset.esgotado === "true";
+                        await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
+                    } else if (acao === "apagar") {
+                        if (confirm("Tem certeza que deseja excluir este produto?")) {
+                            await deleteDoc(doc(db, "produtos", id));
+                            mostrarAviso("Produto excluído com sucesso!");
+                        }
+                    } else if (acao === "editar") {
+                        editIdInput.value = id;
+                        document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
+                        document.getElementById("novo-categoria").value = e.target.dataset.cat;
+                        document.getElementById("novo-preco").value = e.target.dataset.preco;
+                        document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
+                        document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
+
+                        tituloFormProduto.textContent = "✏️ Editar Produto";
+                        btnSalvarProduto.textContent = "Salvar Alterações";
+                        btnCancelarEdicao.style.display = "block";
+                        
+                        window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                 });
             });
