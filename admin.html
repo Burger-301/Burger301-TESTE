@@ -1,1 +1,207 @@
-teste
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Burger 301</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: #1e1e1e;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h2 { color: #f28c28; text-align: center; margin-bottom: 20px; }
+        .campo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #f28c28;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #d96f0c; }
+        .painel-conteudo { display: none; }
+        .status-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .btn-status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        .ativo { background-color: #22c55e; color: white; }
+        .inativo { background-color: #ef4444; color: white; }
+        .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TELA DE LOGIN -->
+        <div id="tela-login">
+            <h2>🔒 Área Restrita</h2>
+            <div class="campo">
+                <label for="senha">Palavra-passe do Administrador:</label>
+                <input type="password" id="senha" placeholder="Digite a senha">
+            </div>
+            <button id="btn-entrar">Entrar no Painel</button>
+            <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px;"></p>
+        </div>
+
+        <!-- PAINEL DE CONTROLE (OCULTO ATÉ O LOGIN) -->
+        <div id="painel-controle" class="painel-conteudo">
+            <h2>⚙️ Painel Burger 301</h2>
+            
+            <div class="status-box">
+                <span>Status da Loja:</span>
+                <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
+            </div>
+
+            <p style="font-size: 13px; color: #aaa; text-align: center; margin-top: 20px;">
+                As alterações feitas aqui refletem instantaneamente no site principal.
+            </p>
+            
+            <p id="msg-sucesso" class="msg"></p>
+            <button id="btn-sair" style="background-color: #444; margin-top: 20px;">Sair</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE CONEXÃO E LÓGICA DO PAINEL -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        // Configuração do Firebase que você obteve
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
+            authDomain: "burger301-79148.firebaseapp.com",
+            projectId: "burger301-79148",
+            storageBucket: "burger301-79148.firebasestorage.app",
+            messagingSenderId: "681050351563",
+            appId: "1:681050351563:web:7712d7ef3911365a2f784e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Defina a sua senha secreta de administrador aqui:
+        const SENHA_ADMIN = "burger301adm"; 
+
+        const telaLogin = document.getElementById("tela-login");
+        const painelControle = document.getElementById("painel-controle");
+        const inputSenha = document.getElementById("senha");
+        const btnEntrar = document.getElementById("btn-entrar");
+        const erroLogin = document.getElementById("erro-login");
+        const btnToggleLoja = document.getElementById("btn-toggle-loja");
+        const msgSucesso = document.getElementById("msg-sucesso");
+        const btnSair = document.getElementById("btn-sair");
+
+        // Ação de Login
+        btnEntrar.addEventListener("click", () => {
+            if (inputSenha.value === SENHA_ADMIN) {
+                telaLogin.style.display = "none";
+                painelControle.style.display = "block";
+                carregarEstadoLoja();
+            } else {
+                erroLogin.textContent = "Palavra-passe incorreta!";
+            }
+        });
+
+        btnSair.addEventListener("click", () => {
+            painelControle.style.display = "none";
+            telaLogin.style.display = "block";
+            inputSenha.value = "";
+            erroLogin.textContent = "";
+        });
+
+        // Referência ao documento de configuração no Firestore
+        const docRef = doc(db, "configuracoes", "loja");
+
+        async function carregarEstadoLoja() {
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const aberto = docSnap.data().aberto;
+                    atualizarBotaoVisual(aberto);
+                } else {
+                    // Se não existir, cria o documento padrão como aberto
+                    await setDoc(docRef, { aberto: true });
+                    atualizarBotaoVisual(true);
+                }
+            } catch (error) {
+                console.error("Erro ao carregar estado:", error);
+            }
+        }
+
+        function atualizarBotaoVisual(aberto) {
+            if (aberto) {
+                btnToggleLoja.textContent = "Aberto";
+                btnToggleLoja.className = "btn-status ativo";
+            } else {
+                btnToggleLoja.textContent = "Fechado";
+                btnToggleLoja.className = "btn-status inativo";
+            }
+        }
+
+        // Alternar Aberto / Fechado ao clicar no botão
+        btnToggleLoja.addEventListener("click", async () => {
+            try {
+                const docSnap = await getDoc(docRef);
+                let estadoAtual = true;
+                if (docSnap.exists()) {
+                    estadoAtual = docSnap.data().aberto;
+                }
+
+                const novoEstado = !estadoAtual;
+                await updateDoc(docRef, { aberto: novoEstado });
+
+                atualizarBotaoVisual(novoEstado);
+                msgSucesso.textContent = "Estado atualizado com sucesso!";
+                setTimeout(() => msgSucesso.textContent = "", 2500);
+            } catch (error) {
+                console.error("Erro ao atualizar:", error);
+                alert("Erro ao atualizar o estado no servidor.");
+            }
+        });
+    </script>
+</body>
+</html>
+
