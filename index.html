@@ -90,85 +90,10 @@
                 <p>Escolha seu hambúrguer e personalize com nossos adicionais.</p>
             </div>
 
-            <!-- POEMA KIDS -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/poema-kids.jpg" alt="Poema Kids">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Poema Kids</h3>
-                    <p class="descricao">
-                        Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“É a vez dos pequenos.”
-                    </p>
-                    <p class="preco">R$ 25,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Poema Kids" data-preco="25.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- SMASH 301 -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/smash-301.jpg" alt="Smash 301">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Smash 301</h3>
-                    <p class="descricao">
-                        Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Para aquela fominha.”
-                    </p>
-                    <p class="preco">R$ 29,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Smash 301" data-preco="29.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- CLÁSSICO DA CASA -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/classico-da-casa.jpg" alt="Clássico da Casa">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Clássico da Casa</h3>
-                    <p class="descricao">
-                        Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Clássico que não sai de moda.”
-                    </p>
-                    <p class="preco">R$ 32,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Clássico da Casa" data-preco="32.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- DU'CHEF -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/duchef.jpg" alt="Du'Chef">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Du'Chef</h3>
-                    <p class="descricao">
-                        Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“O favorito.”
-                    </p>
-                    <p class="preco">R$ 35,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Du'Chef" data-preco="35.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- POEMA TROPICAL -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/poema-tropical.jpg" alt="Poema Tropical">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Poema Tropical</h3>
-                    <p class="descricao">
-                        Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Uma experiência gastronômica.”
-                    </p>
-                    <p class="preco">R$ 37,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Poema Tropical" data-preco="37.00">Adicionar</button>
-                </div>
-            </article>
+            <!-- CONTAINER DINÂMICO DE HAMBÚRGUERES (ALIMENTADO PELO FIREBASE) -->
+            <div id="lista-hamburgueres">
+                <!-- Os produtos serão injetados aqui automaticamente -->
+            </div>
 
             <!-- PORÇÕES -->
             <div class="titulo-secao">
@@ -176,53 +101,10 @@
                 <p>Complete seu pedido com nossas porções.</p>
             </div>
 
-            <!-- FRITAS -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/fritas.jpg" alt="Porção de Fritas">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Porção de Fritas</h3>
-                    <p class="descricao">
-                        Porção de batata frita (na air fryer) e um potinho de maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“O que estava faltando.”
-                    </p>
-                    <p class="preco">R$ 10,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Porção de Fritas" data-preco="10.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- ONION RINGS -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/onion-rings.jpg" alt="Porção de Onion Rings">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Porção de Onion Rings</h3>
-                    <p class="descricao">
-                        Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Vai ficar de fora?”
-                    </p>
-                    <p class="preco">R$ 10,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Porção de Onion Rings" data-preco="10.00">Adicionar</button>
-                </div>
-            </article>
-
-            <!-- FRITAS FELIZ -->
-            <article class="produto">
-                <div class="produto-imagem">
-                    <img src="imagens/fritas-feliz.jpg" alt="Fritas Feliz">
-                </div>
-                <div class="produto-informacoes">
-                    <h3>Fritas Feliz</h3>
-                    <p class="descricao">
-                        Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.<br>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;“Os pequenos adoram.”
-                    </p>
-                    <p class="preco">R$ 10,00</p>
-                    <button type="button" class="botao-adicionar" data-produto="Fritas Feliz" data-preco="10.00">Adicionar</button>
-                </div>
-            </article>
+            <!-- CONTAINER DINÂMICO DE PORÇÕES (ALIMENTADO PELO FIREBASE) -->
+            <div id="lista-porcoes">
+                <!-- As porções serão injetadas aqui automaticamente -->
+            </div>
 
         </section>
 
