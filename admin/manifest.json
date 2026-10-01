@@ -1,0 +1,20 @@
+{
+  "name": "Burger 301 - Painel Admin",
+  "short_name": "Admin 301",
+  "start_url": "admin.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#f28c28",
+  "icons": [
+    {
+      "src": "../imagens/icone.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../imagens/icone.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
