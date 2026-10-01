@@ -71,6 +71,26 @@
         .ativo { background-color: #22c55e; color: white; } /* Verde */
         .inativo { background-color: #ef4444; color: white; } /* Vermelho */
         
+        .abas-admin {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .btn-aba {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a2a;
+            color: #aaa;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-aba.ativa {
+            background: #f28c28;
+            color: #fff;
+        }
+
         .secao-painel {
             background: #252525;
             padding: 15px;
@@ -128,43 +148,74 @@
                 <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
             </div>
 
-            <!-- ADICIONAR / EDITAR PRODUTO -->
-            <div class="secao-painel">
-                <h3 id="titulo-form-produto">➕ Adicionar Novo Produto</h3>
-                <input type="hidden" id="edit-id" value="">
-                <div class="campo">
-                    <label>Nome do Produto:</label>
-                    <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
-                </div>
-                <div class="campo">
-                    <label>Categoria:</label>
-                    <select id="novo-categoria">
-                        <option value="hamburgueres">Hambúrgueres</option>
-                        <option value="porcoes">Porções</option>
-                    </select>
-                </div>
-                <div class="campo">
-                    <label>Preço (R$):</label>
-                    <input type="text" id="novo-preco" placeholder="Ex: 35.00">
-                </div>
-                <div class="campo">
-                    <label>Descrição:</label>
-                    <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
-                </div>
-                <div class="campo">
-                    <label>Imagem (Nome do ficheiro):</label>
-                    <input type="text" id="novo-imagem" placeholder="Ex: imagens/duchef.jpg" value="imagens/">
-                </div>
-                <button id="btn-salvar-produto">Cadastrar Produto</button>
-                <button id="btn-cancelar-edicao" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+            <!-- ABAS DE NAVEGAÇÃO -->
+            <div class="abas-admin">
+                <button class="btn-aba ativa" id="tab-produtos">🍔 Produtos</button>
+                <button class="btn-aba" id="tab-adicionais">➕ Adicionais</button>
             </div>
 
-            <!-- GESTÃO DE ESTOQUE / DISPONIBILIDADE / EDITAR / EXCLUIR -->
-            <div class="secao-painel">
-                <h3>📦 Gerenciar Produtos</h3>
-                <p style="font-size: 12px; color: #aaa; margin-top: 0;">Alterne a disponibilidade, edite ou exclua produtos:</p>
-                <div id="lista-gestao-produtos" class="lista-admin-produtos">
-                    <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
+            <!-- SEÇÃO DE PRODUTOS -->
+            <div id="conteudo-produtos">
+                <div class="secao-painel">
+                    <h3 id="titulo-form-produto">➕ Adicionar Novo Produto</h3>
+                    <input type="hidden" id="edit-id" value="">
+                    <div class="campo">
+                        <label>Nome do Produto:</label>
+                        <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
+                    </div>
+                    <div class="campo">
+                        <label>Categoria:</label>
+                        <select id="novo-categoria">
+                            <option value="hamburgueres">Hambúrgueres</option>
+                            <option value="porcoes">Porções</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label>Preço (R$):</label>
+                        <input type="text" id="novo-preco" placeholder="Ex: 35.00">
+                    </div>
+                    <div class="campo">
+                        <label>Descrição:</label>
+                        <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
+                    </div>
+                    <div class="campo">
+                        <label>Imagem PNG (Caminho no GitHub):</label>
+                        <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="imagens/">
+                    </div>
+                    <button id="btn-salvar-produto">Cadastrar Produto</button>
+                    <button id="btn-cancelar-edicao" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                </div>
+
+                <div class="secao-painel">
+                    <h3>📦 Gerenciar Produtos</h3>
+                    <div id="lista-gestao-produtos" class="lista-admin-produtos">
+                        <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE ADICIONAIS -->
+            <div id="conteudo-adicionais" style="display: none;">
+                <div class="secao-painel">
+                    <h3 id="titulo-form-adicional">➕ Adicionar Novo Adicional</h3>
+                    <input type="hidden" id="edit-id-adic" value="">
+                    <div class="campo">
+                        <label>Nome do Adicional:</label>
+                        <input type="text" id="adic-nome" placeholder="Ex: Bacon Extra">
+                    </div>
+                    <div class="campo">
+                        <label>Preço (R$):</label>
+                        <input type="text" id="adic-preco" placeholder="Ex: 5.00">
+                    </div>
+                    <button id="btn-salvar-adicional">Cadastrar Adicional</button>
+                    <button id="btn-cancelar-edicao-adic" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                </div>
+
+                <div class="secao-painel">
+                    <h3>🧀 Gerenciar Adicionais</h3>
+                    <div id="lista-gestao-adicionais" class="lista-admin-produtos">
+                        <p style="font-size: 13px; color: #777;">A carregar adicionais...</p>
+                    </div>
                 </div>
             </div>
 
@@ -200,6 +251,26 @@
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
+        // Controlo de Abas
+        const tabProdutos = document.getElementById("tab-produtos");
+        const tabAdicionais = document.getElementById("tab-adicionais");
+        const conteudoProdutos = document.getElementById("conteudo-produtos");
+        const conteudoAdicionais = document.getElementById("conteudo-adicionais");
+
+        tabProdutos.addEventListener("click", () => {
+            tabProdutos.classList.add("ativa");
+            tabAdicionais.classList.remove("ativa");
+            conteudoProdutos.style.display = "block";
+            conteudoAdicionais.style.display = "none";
+        });
+
+        tabAdicionais.addEventListener("click", () => {
+            tabAdicionais.classList.add("ativa");
+            tabProdutos.classList.remove("ativa");
+            conteudoAdicionais.style.display = "block";
+            conteudoProdutos.style.display = "none";
+        });
+
         btnEntrar.addEventListener("click", () => {
             if (inputSenha.value === SENHA_ADMIN) {
                 telaLogin.style.display = "none";
@@ -219,8 +290,8 @@
 
         const docRefConfig = doc(db, "configuracoes", "loja");
         
-        async function verificarEPopularProdutosAdmin(snapshot) {
-            if (snapshot.empty) {
+        async function verificarEPopularDados(snapshotProd, snapshotAdic) {
+            if (snapshotProd.empty) {
                 const produtosIniciais = [
                     { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "imagens/poema-kids.jpg", esgotado: false },
                     { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "imagens/smash-301.jpg", esgotado: false },
@@ -235,10 +306,26 @@
                     await addDoc(collection(db, "produtos"), prod);
                 }
             }
+
+            if (snapshotAdic.empty) {
+                const adicionaisIniciais = [
+                    { nome: "Bacon", preco: 5.00, esgotado: false },
+                    { nome: "Cebola caramelizada", preco: 4.00, esgotado: false },
+                    { nome: "Abacaxi grelhado", preco: 4.00, esgotado: false },
+                    { nome: "Blend bovino 150g", preco: 8.00, esgotado: false },
+                    { nome: "Smash bovino 75g", preco: 5.00, esgotado: false },
+                    { nome: "Queijo cheddar", preco: 6.00, esgotado: false },
+                    { nome: "Queijo mussarela", preco: 4.00, esgotado: false },
+                    { nome: "Anéis de cebola", preco: 4.00, esgotado: false },
+                    { nome: "Pote de maionese extra", preco: 2.00, esgotado: false }
+                ];
+                for (const adic of adicionaisIniciais) {
+                    await addDoc(collection(db, "adicionais"), adic);
+                }
+            }
         }
 
-        function iniciarOuvintesAdmin() {
-            // Ouve status da loja em tempo real
+        async function iniciarOuvintesAdmin() {
             onSnapshot(docRefConfig, async (docSnap) => {
                 if (docSnap.exists()) {
                     atualizarBotaoLoja(docSnap.data().aberto);
@@ -248,26 +335,28 @@
                 }
             });
 
-            // Ouve lista de produtos e popula automaticamente se estiver vazia
-            onSnapshot(collection(db, "produtos"), async (snapshot) => {
-                if (snapshot.empty) {
-                    await verificarEPopularProdutosAdmin(snapshot);
-                } else {
-                    renderizarListaAdmin(snapshot);
-                }
-            }, (error) => {
-                console.error("Erro produtos:", error);
-                document.getElementById("lista-gestao-produtos").innerHTML = "<p style='font-size:13px; color:#ef4444;'>Erro de permissão no Firebase.</p>";
+            const snapProd = await getDocs(collection(db, "produtos"));
+            const snapAdic = await getDocs(collection(db, "adicionais"));
+            await verificarEPopularDados(snapProd, snapAdic);
+
+            // Ouvinte de Produtos
+            onSnapshot(collection(db, "produtos"), (snapshot) => {
+                renderizarListaProdutos(snapshot);
+            });
+
+            // Ouvinte de Adicionais
+            onSnapshot(collection(db, "adicionais"), (snapshot) => {
+                renderizarListaAdicionais(snapshot);
             });
         }
 
         function atualizarBotaoLoja(aberto) {
             if (aberto) {
                 btnToggleLoja.textContent = "Aberto";
-                btnToggleLoja.className = "btn-status ativo"; // Verde
+                btnToggleLoja.className = "btn-status ativo";
             } else {
                 btnToggleLoja.textContent = "Fechado";
-                btnToggleLoja.className = "btn-status inativo"; // Vermelho
+                btnToggleLoja.className = "btn-status inativo";
             }
         }
 
@@ -279,6 +368,7 @@
             mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
         });
 
+        // Gestão de Produtos
         const btnSalvarProduto = document.getElementById("btn-salvar-produto");
         const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
         const tituloFormProduto = document.getElementById("titulo-form-produto");
@@ -298,25 +388,19 @@
             }
 
             if (idEdicao) {
-                await updateDoc(doc(db, "produtos", idEdicao), {
-                    nome, categoria, preco, descricao, imagem
-                });
+                await updateDoc(doc(db, "produtos", idEdicao), { nome, categoria, preco, descricao, imagem });
                 mostrarAviso("Produto atualizado com sucesso!");
-                limparFormulario();
+                limparFormularioProduto();
             } else {
-                await addDoc(collection(db, "produtos"), {
-                    nome, categoria, preco, descricao, imagem, esgotado: false
-                });
+                await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false });
                 mostrarAviso("Produto adicionado com sucesso!");
-                limparFormulario();
+                limparFormularioProduto();
             }
         });
 
-        btnCancelarEdicao.addEventListener("click", () => {
-            limparFormulario();
-        });
+        btnCancelarEdicao.addEventListener("click", limparFormularioProduto);
 
-        function limparFormulario() {
+        function limparFormularioProduto() {
             editIdInput.value = "";
             document.getElementById("novo-nome").value = "";
             document.getElementById("novo-preco").value = "";
@@ -327,7 +411,7 @@
             btnCancelarEdicao.style.display = "none";
         }
 
-        function renderizarListaAdmin(snapshot) {
+        function renderizarListaProdutos(snapshot) {
             const listaDiv = document.getElementById("lista-gestao-produtos");
             listaDiv.innerHTML = "";
 
@@ -347,11 +431,11 @@
                         <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
                     </div>
                     <div class="item-botoes">
-                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle" data-id="${id}" data-esgotado="${p.esgotado}">
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
                             ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
-                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar" data-id="${id}">🗑️ Excluir</button>
+                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
+                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
@@ -362,15 +446,15 @@
                     const acao = e.target.dataset.acao;
                     const id = e.target.dataset.id;
 
-                    if (acao === "toggle") {
+                    if (acao === "toggle-prod") {
                         const esgotadoAtual = e.target.dataset.esgotado === "true";
                         await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
-                    } else if (acao === "apagar") {
-                        if (confirm("Tem certeza que deseja excluir este produto?")) {
+                    } else if (acao === "apagar-prod") {
+                        if (confirm("Deseja excluir este produto?")) {
                             await deleteDoc(doc(db, "produtos", id));
-                            mostrarAviso("Produto excluído com sucesso!");
+                            mostrarAviso("Produto excluído!");
                         }
-                    } else if (acao === "editar") {
+                    } else if (acao === "editar-prod") {
                         editIdInput.value = id;
                         document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
                         document.getElementById("novo-categoria").value = e.target.dataset.cat;
@@ -381,7 +465,101 @@
                         tituloFormProduto.textContent = "✏️ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
-                        
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                });
+            });
+        }
+
+        // Gestão de Adicionais
+        const btnSalvarAdicional = document.getElementById("btn-salvar-adicional");
+        const btnCancelarEdicaoAdic = document.getElementById("btn-cancelar-edicao-adic");
+        const tituloFormAdicional = document.getElementById("titulo-form-adicional");
+        const editIdAdicInput = document.getElementById("edit-id-adic");
+
+        btnSalvarAdicional.addEventListener("click", async () => {
+            const idEdicao = editIdAdicInput.value;
+            const nome = document.getElementById("adic-nome").value.trim();
+            const preco = parseFloat(document.getElementById("adic-preco").value.replace(",", "."));
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido para o adicional.");
+                return;
+            }
+
+            if (idEdicao) {
+                await updateDoc(doc(db, "adicionais", idEdicao), { nome, preco });
+                mostrarAviso("Adicional atualizado com sucesso!");
+                limparFormularioAdicional();
+            } else {
+                await addDoc(collection(db, "adicionais"), { nome, preco, esgotado: false });
+                mostrarAviso("Adicional adicionado com sucesso!");
+                limparFormularioAdicional();
+            }
+        });
+
+        btnCancelarEdicaoAdic.addEventListener("click", limparFormularioAdicional);
+
+        function limparFormularioAdicional() {
+            editIdAdicInput.value = "";
+            document.getElementById("adic-nome").value = "";
+            document.getElementById("adic-preco").value = "";
+            tituloFormAdicional.textContent = "➕ Adicionar Novo Adicional";
+            btnSalvarAdicional.textContent = "Cadastrar Adicional";
+            btnCancelarEdicaoAdic.style.display = "none";
+        }
+
+        function renderizarListaAdicionais(snapshot) {
+            const listaDiv = document.getElementById("lista-gestao-adicionais");
+            listaDiv.innerHTML = "";
+
+            if (snapshot.empty) {
+                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum adicional cadastrado.</p>";
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const a = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement("div");
+                item.className = "item-admin-produto";
+                item.innerHTML = `
+                    <div class="item-topo">
+                        <span><b>${a.nome}</b> — R$ ${Number(a.preco).toFixed(2)}</span>
+                    </div>
+                    <div class="item-botoes">
+                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
+                            ${a.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
+                        </button>
+                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
+                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
+                    </div>
+                `;
+                listaDiv.appendChild(item);
+            });
+
+            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    const acao = e.target.dataset.acao;
+                    const id = e.target.dataset.id;
+
+                    if (acao === "toggle-adic") {
+                        const esgotadoAtual = e.target.dataset.esgotado === "true";
+                        await updateDoc(doc(db, "adicionais", id), { esgotado: !esgotadoAtual });
+                    } else if (acao === "apagar-adic") {
+                        if (confirm("Deseja excluir este adicional?")) {
+                            await deleteDoc(doc(db, "adicionais", id));
+                            mostrarAviso("Adicional excluído!");
+                        }
+                    } else if (acao === "editar-adic") {
+                        editIdAdicInput.value = id;
+                        document.getElementById("adic-nome").value = decodeURIComponent(e.target.dataset.nome);
+                        document.getElementById("adic-preco").value = e.target.dataset.preco;
+
+                        tituloFormAdicional.textContent = "✏️ Editar Adicional";
+                        btnSalvarAdicional.textContent = "Salvar Alterações";
+                        btnCancelarEdicaoAdic.style.display = "block";
                         window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                 });
