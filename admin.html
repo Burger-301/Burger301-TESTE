@@ -219,6 +219,24 @@
 
         const docRefConfig = doc(db, "configuracoes", "loja");
         
+        async function verificarEPopularProdutosAdmin(snapshot) {
+            if (snapshot.empty) {
+                const produtosIniciais = [
+                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "imagens/poema-kids.jpg", esgotado: false },
+                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "imagens/smash-301.jpg", esgotado: false },
+                    { nome: "Clássico da Casa", categoria: "hamburgueres", preco: 32.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.", imagem: "imagens/classico-da-casa.jpg", esgotado: false },
+                    { nome: "Du'Chef", categoria: "hamburgueres", preco: 35.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.", imagem: "imagens/duchef.jpg", esgotado: false },
+                    { nome: "Poema Tropical", categoria: "hamburgueres", preco: 37.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.", imagem: "imagens/poema-tropical.jpg", esgotado: false },
+                    { nome: "Porção de Fritas", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas.jpg", esgotado: false },
+                    { nome: "Porção de Onion Rings", categoria: "porcoes", preco: 10.00, descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/onion-rings.jpg", esgotado: false },
+                    { nome: "Fritas Feliz", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas-feliz.jpg", esgotado: false }
+                ];
+                for (const prod of produtosIniciais) {
+                    await addDoc(collection(db, "produtos"), prod);
+                }
+            }
+        }
+
         function iniciarOuvintesAdmin() {
             // Ouve status da loja em tempo real
             onSnapshot(docRefConfig, async (docSnap) => {
@@ -228,16 +246,18 @@
                     await setDoc(docRefConfig, { aberto: true });
                     atualizarBotaoLoja(true);
                 }
-            }, (error) => {
-                console.error("Erro config:", error);
             });
 
-            // Ouve lista de produtos em tempo real com tratamento de erro
-            onSnapshot(collection(db, "produtos"), (snapshot) => {
-                renderizarListaAdmin(snapshot);
+            // Ouve lista de produtos e popula automaticamente se estiver vazia
+            onSnapshot(collection(db, "produtos"), async (snapshot) => {
+                if (snapshot.empty) {
+                    await verificarEPopularProdutosAdmin(snapshot);
+                } else {
+                    renderizarListaAdmin(snapshot);
+                }
             }, (error) => {
                 console.error("Erro produtos:", error);
-                document.getElementById("lista-gestao-produtos").innerHTML = "<p style='font-size:13px; color:#ef4444;'>Erro de permissão no Firebase. Verifique as Regras de Segurança do Firestore.</p>";
+                document.getElementById("lista-gestao-produtos").innerHTML = "<p style='font-size:13px; color:#ef4444;'>Erro de permissão no Firebase.</p>";
             });
         }
 
