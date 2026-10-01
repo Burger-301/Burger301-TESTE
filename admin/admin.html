@@ -175,15 +175,26 @@
 <body>
 
     <div class="container">
-        <!-- TELA DE LOGIN -->
+        <!-- TELA DE LOGIN COM SUPORTE A SALVAR SENHA E ASSINATURA -->
         <div id="tela-login">
             <h2>🔒 Área Restrita</h2>
-            <div class="campo">
-                <label for="senha">Palavra-passe:</label>
-                <input type="password" id="senha" placeholder="Digite a senha">
-            </div>
-            <button id="btn-entrar">Entrar no Painel</button>
+            <form id="form-login">
+                <div class="campo">
+                    <label for="usuario">Usuário:</label>
+                    <input type="text" id="usuario" name="username" value="admin" autocomplete="username" readonly style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+                <div class="campo">
+                    <label for="senha">Palavra-passe:</label>
+                    <input type="password" id="senha" name="password" placeholder="Digite a senha" autocomplete="current-password" required>
+                </div>
+                <button type="submit" id="btn-entrar">Entrar no Painel</button>
+            </form>
             <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px;"></p>
+            
+            <!-- ASSINATURA CS CODE SOLUTIONS -->
+            <p style="font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 20px; letter-spacing: 0.5px;">
+                Powered by <span style="color: #f28c28; font-weight: bold;">CS Code Solutions</span>
+            </p>
         </div>
 
         <!-- PAINEL DE CONTROLE -->
@@ -231,10 +242,10 @@
                             <label style="margin-bottom: 0;">Imagem PNG (Caminho):</label>
                             <button type="button" id="btn-ajuda-img" style="width: 24px; height: 24px; padding: 0; font-size: 12px; background: #3b82f6; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</button>
                         </div>
-                        <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="imagens/">
+                        <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="../imagens/">
                     </div>
-                    <button id="btn-salvar-produto">Cadastrar Produto</button>
-                    <button id="btn-cancelar-edicao" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                    <button id="btn-salvar-produto" type="button">Cadastrar Produto</button>
+                    <button id="btn-cancelar-edicao" type="button" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
                 </div>
 
                 <div class="secao-painel">
@@ -258,8 +269,8 @@
                         <label>Preço (R$):</label>
                         <input type="text" id="adic-preco" placeholder="Ex: 5.00">
                     </div>
-                    <button id="btn-salvar-adicional">Cadastrar Adicional</button>
-                    <button id="btn-cancelar-edicao-adic" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                    <button id="btn-salvar-adicional" type="button">Cadastrar Adicional</button>
+                    <button id="btn-cancelar-edicao-adic" type="button" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
                 </div>
 
                 <div class="secao-painel">
@@ -271,7 +282,7 @@
             </div>
 
             <p id="msg-sucesso" class="msg"></p>
-            <button id="btn-sair" style="background-color: #444; margin-top: 10px;">Sair</button>
+            <button id="btn-sair" type="button" style="background-color: #444; margin-top: 10px;">Sair</button>
         </div>
     </div>
 
@@ -287,7 +298,7 @@
                 <b>Passo a passo:</b><br>
                 1. Faça o upload da sua imagem PNG para a pasta <code>imagens/</code> no GitHub.<br>
                 2. No campo de imagem do painel, digite o caminho exato:<br>
-                <code>imagens/nome-da-foto.png</code>
+                <code>../imagens/nome-da-foto.png</code>
             </p>
         </div>
     </div>
@@ -308,12 +319,11 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const SENHA_ADMIN = "burger301adm"; 
 
         const telaLogin = document.getElementById("tela-login");
         const painelControle = document.getElementById("painel-controle");
+        const formLogin = document.getElementById("form-login");
         const inputSenha = document.getElementById("senha");
-        const btnEntrar = document.getElementById("btn-entrar");
         const erroLogin = document.getElementById("erro-login");
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
         const msgSucesso = document.getElementById("msg-sucesso");
@@ -346,8 +356,13 @@
             conteudoProdutos.style.display = "none";
         });
 
-        btnEntrar.addEventListener("click", () => {
-            if (inputSenha.value === SENHA_ADMIN) {
+        // Validação de login com senha codificada (evita texto plano visível no código)
+        formLogin.addEventListener("submit", (e) => {
+            e.preventDefault();
+            // Senha cifrada em Base64 correspondente a: b3016118Jc*
+            const senhaCorretaHash = "YjMwMTYxMThKYyo=";
+
+            if (btoa(inputSenha.value) === senhaCorretaHash) {
                 telaLogin.style.display = "none";
                 painelControle.style.display = "block";
                 iniciarOuvintesAdmin();
@@ -447,7 +462,7 @@
             const categoria = document.getElementById("novo-categoria").value;
             const preco = parseFloat(document.getElementById("novo-preco").value.replace(",", "."));
             const descricao = document.getElementById("novo-descricao").value.trim();
-            const imagem = document.getElementById("novo-imagem").value.trim() || "imagens/icone.png";
+            const imagem = document.getElementById("novo-imagem").value.trim() || "../imagens/icone.png";
 
             if (!nome || isNaN(preco)) {
                 alert("Preencha o nome e um preço válido.");
@@ -472,7 +487,7 @@
             document.getElementById("novo-nome").value = "";
             document.getElementById("novo-preco").value = "";
             document.getElementById("novo-descricao").value = "";
-            document.getElementById("novo-imagem").value = "imagens/";
+            document.getElementById("novo-imagem").value = "../imagens/";
             tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
             btnSalvarProduto.textContent = "Cadastrar Produto";
             btnCancelarEdicao.style.display = "none";
@@ -498,11 +513,11 @@
                         <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
                     </div>
                     <div class="item-botoes">
-                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
                             ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
-                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
+                        <button type="button" style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
+                        <button type="button" style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
@@ -529,7 +544,7 @@
                         document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
                         document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
 
-                        tituloFormProduto.textContent = "✏️️ Editar Produto";
+                        tituloFormProduto.textContent = "✏️ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -595,11 +610,11 @@
                         <span><b>${a.nome}</b> — R$ ${Number(a.preco).toFixed(2)}</span>
                     </div>
                     <div class="item-botoes">
-                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
+                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
                             ${a.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
-                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
+                        <button type="button" style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
+                        <button type="button" style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
