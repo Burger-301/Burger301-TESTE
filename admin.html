@@ -122,6 +122,43 @@
             gap: 5px;
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
+
+        /* ESTILOS DA JANELA FLUTUANTE DE AJUDA */
+        #modal-ajuda-img {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .modal-ajuda-conteudo {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            border: 1px solid #444;
+        }
+        .btn-fechar-ajuda {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
@@ -179,7 +216,10 @@
                         <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
                     </div>
                     <div class="campo">
-                        <label>Imagem PNG (Caminho no GitHub):</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label style="margin-bottom: 0;">Imagem PNG (Caminho):</label>
+                            <button type="button" id="btn-ajuda-img" style="width: 24px; height: 24px; padding: 0; font-size: 12px; background: #3b82f6; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</button>
+                        </div>
                         <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="imagens/">
                     </div>
                     <button id="btn-salvar-produto">Cadastrar Produto</button>
@@ -224,6 +264,23 @@
         </div>
     </div>
 
+    <!-- JANELA FLUTUANTE (MODAL) DE AJUDA DA IMAGEM -->
+    <div id="modal-ajuda-img">
+        <div class="modal-ajuda-conteudo">
+            <button type="button" id="fechar-ajuda-img" class="btn-fechar-ajuda">✕</button>
+            <h3 style="color: #f28c28; margin-top: 0;">💡 Como adicionar imagens?</h3>
+            <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
+                Como o site está hospedado no GitHub Pages, os ficheiros de imagem devem ser colocados diretamente na pasta <b>imagens/</b> do seu repositório.
+            </p>
+            <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
+                <b>Passo a passo recomendado:</b><br>
+                1. Faça o upload da sua imagem PNG para a pasta <code>imagens/</code> no GitHub.<br>
+                2. No campo de imagem, digite o caminho exato do ficheiro, por exemplo:<br>
+                <code>imagens/nome-da-foto.png</code>
+            </p>
+        </div>
+    </div>
+
     <!-- SCRIPT DO PAINEL ADMIN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -250,6 +307,25 @@
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
+
+        // Lógica do Modal de Ajuda de Imagem
+        const btnAjudaImg = document.getElementById("btn-ajuda-img");
+        const modalAjudaImg = document.getElementById("modal-ajuda-img");
+        const fecharAjudaImg = document.getElementById("fechar-ajuda-img");
+
+        btnAjudaImg.addEventListener("click", () => {
+            modalAjudaImg.style.display = "flex";
+        });
+
+        fecharAjudaImg.addEventListener("click", () => {
+            modalAjudaImg.style.display = "none";
+        });
+
+        modalAjudaImg.addEventListener("click", (e) => {
+            if (e.target === modalAjudaImg) {
+                modalAjudaImg.style.display = "none";
+            }
+        });
 
         // Controlo de Abas
         const tabProdutos = document.getElementById("tab-produtos");
