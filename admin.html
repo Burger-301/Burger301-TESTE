@@ -13,28 +13,28 @@
             padding: 20px;
             display: flex;
             justify-content: center;
-            align-items: center;
             min-height: 100vh;
         }
         .container {
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             background: #1e1e1e;
-            padding: 25px;
+            padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            height: fit-content;
         }
         h2 { color: #f28c28; text-align: center; margin-bottom: 20px; }
         .campo { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="password"], input[type="text"] {
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input, select, textarea {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 1px solid #333;
             border-radius: 6px;
             background: #2a2a2a;
             color: #fff;
-            font-size: 16px;
+            font-size: 15px;
             box-sizing: border-box;
         }
         button {
@@ -58,7 +58,7 @@
             background: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .btn-status {
             padding: 8px 16px;
@@ -66,9 +66,34 @@
             font-weight: bold;
             cursor: pointer;
             border: none;
+            width: auto;
         }
         .ativo { background-color: #22c55e; color: white; }
         .inativo { background-color: #ef4444; color: white; }
+        
+        .secao-painel {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .secao-painel h3 { color: #f28c28; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        
+        .lista-admin-produtos {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .item-admin-produto {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 8px 10px;
+            border-radius: 5px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
     </style>
 </head>
@@ -79,37 +104,71 @@
         <div id="tela-login">
             <h2>🔒 Área Restrita</h2>
             <div class="campo">
-                <label for="senha">Palavra-passe do Administrador:</label>
+                <label for="senha">Palavra-passe:</label>
                 <input type="password" id="senha" placeholder="Digite a senha">
             </div>
             <button id="btn-entrar">Entrar no Painel</button>
             <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px;"></p>
         </div>
 
-        <!-- PAINEL DE CONTROLE (OCULTO ATÉ O LOGIN) -->
+        <!-- PAINEL DE CONTROLE -->
         <div id="painel-controle" class="painel-conteudo">
             <h2>⚙️ Painel Burger 301</h2>
             
+            <!-- STATUS DA LOJA -->
             <div class="status-box">
                 <span>Status da Loja:</span>
                 <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
             </div>
 
-            <p style="font-size: 13px; color: #aaa; text-align: center; margin-top: 20px;">
-                As alterações feitas aqui refletem instantaneamente no site principal.
-            </p>
-            
+            <!-- ADICIONAR NOVO PRODUTO -->
+            <div class="secao-painel">
+                <h3>➕ Adicionar Novo Produto</h3>
+                <div class="campo">
+                    <label>Nome do Produto:</label>
+                    <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
+                </div>
+                <div class="campo">
+                    <label>Categoria:</label>
+                    <select id="novo-categoria">
+                        <option value="hamburgueres">Hambúrgueres</option>
+                        <option value="porcoes">Porções</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label>Preço (R$):</label>
+                    <input type="text" id="novo-preco" placeholder="Ex: 35.00">
+                </div>
+                <div class="campo">
+                    <label>Descrição:</label>
+                    <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
+                </div>
+                <div class="campo">
+                    <label>Imagem (Nome do ficheiro):</label>
+                    <input type="text" id="novo-imagem" placeholder="Ex: imagens/duchef.jpg">
+                </div>
+                <button id="btn-salvar-produto">Cadastrar Produto</button>
+            </div>
+
+            <!-- GESTÃO DE ESTOQUE / DISPONIBILIDADE -->
+            <div class="secao-painel">
+                <h3>📦 Disponibilidade de Produtos</h3>
+                <p style="font-size: 12px; color: #aaa; margin-top: 0;">Clique para alternar entre Disponível e Esgotado:</p>
+                <div id="lista-gestao-produtos" class="lista-admin-produtos">
+                    <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
+                </div>
+            </div>
+
             <p id="msg-sucesso" class="msg"></p>
-            <button id="btn-sair" style="background-color: #444; margin-top: 20px;">Sair</button>
+            <button id="btn-sair" style="background-color: #444; margin-top: 10px;">Sair</button>
         </div>
     </div>
 
-    <!-- SCRIPT DE CONEXÃO E LÓGICA DO PAINEL -->
+    <!-- SCRIPT DO PAINEL ADMIN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
-        // Configuração do Firebase que você obteve
         const firebaseConfig = {
             apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
             authDomain: "burger301-79148.firebaseapp.com",
@@ -121,8 +180,6 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-
-        // Defina a sua senha secreta de administrador aqui:
         const SENHA_ADMIN = "burger301adm"; 
 
         const telaLogin = document.getElementById("tela-login");
@@ -134,12 +191,12 @@
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
-        // Ação de Login
         btnEntrar.addEventListener("click", () => {
             if (inputSenha.value === SENHA_ADMIN) {
                 telaLogin.style.display = "none";
                 painelControle.style.display = "block";
                 carregarEstadoLoja();
+                carregarProdutosAdmin();
             } else {
                 erroLogin.textContent = "Palavra-passe incorreta!";
             }
@@ -152,26 +209,19 @@
             erroLogin.textContent = "";
         });
 
-        // Referência ao documento de configuração no Firestore
-        const docRef = doc(db, "configuracoes", "loja");
-
+        // Loja Aberta/Fechada
+        const docRefConfig = doc(db, "configuracoes", "loja");
         async function carregarEstadoLoja() {
-            try {
-                const docSnap = await getDoc(docRef);
-                if (docSnap.exists()) {
-                    const aberto = docSnap.data().aberto;
-                    atualizarBotaoVisual(aberto);
-                } else {
-                    // Se não existir, cria o documento padrão como aberto
-                    await setDoc(docRef, { aberto: true });
-                    atualizarBotaoVisual(true);
-                }
-            } catch (error) {
-                console.error("Erro ao carregar estado:", error);
+            const docSnap = await getDoc(docRefConfig);
+            if (docSnap.exists()) {
+                atualizarBotaoLoja(docSnap.data().aberto);
+            } else {
+                await setDoc(docRefConfig, { aberto: true });
+                atualizarBotaoLoja(true);
             }
         }
 
-        function atualizarBotaoVisual(aberto) {
+        function atualizarBotaoLoja(aberto) {
             if (aberto) {
                 btnToggleLoja.textContent = "Aberto";
                 btnToggleLoja.className = "btn-status ativo";
@@ -181,27 +231,97 @@
             }
         }
 
-        // Alternar Aberto / Fechado ao clicar no botão
         btnToggleLoja.addEventListener("click", async () => {
-            try {
-                const docSnap = await getDoc(docRef);
-                let estadoAtual = true;
-                if (docSnap.exists()) {
-                    estadoAtual = docSnap.data().aberto;
-                }
-
-                const novoEstado = !estadoAtual;
-                await updateDoc(docRef, { aberto: novoEstado });
-
-                atualizarBotaoVisual(novoEstado);
-                msgSucesso.textContent = "Estado atualizado com sucesso!";
-                setTimeout(() => msgSucesso.textContent = "", 2500);
-            } catch (error) {
-                console.error("Erro ao atualizar:", error);
-                alert("Erro ao atualizar o estado no servidor.");
-            }
+            const docSnap = await getDoc(docRefConfig);
+            const novoEstado = !docSnap.data().aberto;
+            await updateDoc(docRefConfig, { aberto: novoEstado });
+            atualizarBotaoLoja(novoEstado);
+            mostrarAviso("Status da loja atualizado!");
         });
+
+        // Adicionar Novo Produto
+        document.getElementById("btn-salvar-produto").addEventListener("click", async () => {
+            const nome = document.getElementById("novo-nome").value.trim();
+            const categoria = document.getElementById("novo-categoria").value;
+            const preco = parseFloat(document.getElementById("novo-preco").value.replace(",", "."));
+            const descricao = document.getElementById("novo-descricao").value.trim();
+            const imagem = document.getElementById("novo-imagem").value.trim() || "imagens/icone.png";
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido.");
+                return;
+            }
+
+            await addDoc(collection(db, "produtos"), {
+                nome, categoria, preco, descricao, imagem, esgotado: false
+            });
+
+            document.getElementById("novo-nome").value = "";
+            document.getElementById("novo-preco").value = "";
+            document.getElementById("novo-descricao").value = "";
+            document.getElementById("novo-imagem").value = "";
+
+            mostrarAviso("Produto adicionado com sucesso!");
+            carregarProdutosAdmin();
+        });
+
+        // Gestão de Estoque (Esgotado / Disponível)
+        async function carregarProdutosAdmin() {
+            const listaDiv = document.getElementById("lista-gestao-produtos");
+            listaDiv.innerHTML = "A carregar...";
+            
+            const querySnapshot = await getDocs(collection(db, "produtos"));
+            listaDiv.innerHTML = "";
+
+            if (querySnapshot.empty) {
+                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum produto cadastrado.</p>";
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const p = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement("div");
+                item.className = "item-admin-produto";
+                item.innerHTML = `
+                    <span><b>${p.nome}</b> — R$ ${p.preco.toFixed(2)}</span>
+                    <div>
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 4px 10px; font-size: 12px;" data-id="${id}" data-esgotado="${p.esgotado}">
+                            ${p.esgotado ? 'Esgotado' : 'Disponível'}
+                        </button>
+                        <button style="background: #ef4444; padding: 4px 8px; font-size: 12px; margin-left: 5px; border-radius:4px; border:none; color:white; cursor:pointer;" data-apagar="${id}">🗑️</button>
+                    </div>
+                `;
+                listaDiv.appendChild(item);
+            });
+
+            // Eventos de alterar estoque
+            listaDiv.querySelectorAll("[data-id]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    const id = e.target.dataset.id;
+                    const esgotadoAtual = e.target.dataset.esgotado === "true";
+                    await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
+                    carregarProdutosAdmin();
+                });
+            });
+
+            // Eventos de apagar produto
+            listaDiv.querySelectorAll("[data-apagar]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    if (confirm("Tem certeza que deseja apagar este produto?")) {
+                        await deleteDoc(doc(db, "produtos", e.target.dataset.apagar));
+                        carregarProdutosAdmin();
+                        mostrarAviso("Produto removido!");
+                    }
+                });
+            });
+        }
+
+        function mostrarAviso(texto) {
+            msgSucesso.textContent = texto;
+            setTimeout(() => msgSucesso.textContent = "", 2500);
+        }
     </script>
 </body>
 </html>
-
