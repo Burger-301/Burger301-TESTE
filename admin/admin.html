@@ -34,7 +34,28 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             height: fit-content;
+            position: relative; /* Necessário para posicionar o botão de instalar */
         }
+        
+        /* BOTÃO DE INSTALAÇÃO DISCRETO */
+        #btn-instalar {
+            display: none; /* Escondido por padrão */
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: transparent;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #f28c28;
+            padding: 5px;
+            transition: transform 0.2s;
+            width: auto;
+        }
+        #btn-instalar:hover {
+            transform: scale(1.1);
+        }
+
         h2 { color: #f28c28; text-align: center; margin-bottom: 20px; }
         .campo { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
@@ -79,8 +100,8 @@
             border: none;
             width: auto;
         }
-        .ativo { background-color: #22c55e; color: white; } /* Verde */
-        .inativo { background-color: #ef4444; color: white; } /* Vermelho */
+        .ativo { background-color: #22c55e; color: white; }
+        .inativo { background-color: #ef4444; color: white; }
         
         .abas-admin {
             display: flex;
@@ -134,7 +155,6 @@
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
 
-        /* JANELA FLUTUANTE DE AJUDA */
         #modal-ajuda-img {
             display: none;
             position: fixed;
@@ -175,9 +195,12 @@
 <body>
 
     <div class="container">
+        <!-- Ícone discreto de instalação -->
+        <button id="btn-instalar" title="Instalar Aplicação">📥</button>
+
         <!-- TELA DE LOGIN COM CAMPO DE E-MAIL VISÍVEL E LIMPO -->
         <div id="tela-login">
-            <h2>🔒 Área Restrita</h2>
+            <h2 style="margin-top: 10px;">🔒 Área Restrita</h2>
             <form id="form-login">
                 <div class="campo">
                     <label for="email">E-mail:</label>
@@ -189,7 +212,7 @@
                 </div>
                 <button type="submit" id="btn-entrar">Entrar no Painel</button>
             </form>
-            <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px;"></p>
+            <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px; word-break: break-all;"></p>
             
             <!-- ASSINATURA CS CODE SOLUTIONS -->
             <p style="font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 20px; letter-spacing: 0.5px;">
@@ -199,7 +222,7 @@
 
         <!-- PAINEL DE CONTROLE -->
         <div id="painel-controle" class="painel-conteudo">
-            <h2>⚙️ Painel Burger 301</h2>
+            <h2 style="margin-top: 10px;">⚙️ Painel Burger 301</h2>
             
             <!-- STATUS DA LOJA -->
             <div class="status-box">
@@ -303,6 +326,47 @@
         </div>
     </div>
 
+    <!-- LÓGICA DE INSTALAÇÃO (PWA) -->
+    <script>
+        // Registo do Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('../sw.js')
+                .then(reg => console.log('Service Worker registado!', reg))
+                .catch(err => console.error('Erro no Service Worker:', err));
+            });
+        }
+
+        // Mostrar o botão discreto apenas quando o navegador permitir a instalação
+        let deferredPrompt;
+        const btnInstalar = document.getElementById('btn-instalar');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); // Impede o prompt automático
+            deferredPrompt = e; // Guarda o evento
+            btnInstalar.style.display = 'block'; // Mostra o ícone 📥
+        });
+
+        btnInstalar.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // Mostra o prompt nativo de instalação
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('Utilizador aceitou a instalação');
+                } else {
+                    console.log('Utilizador recusou a instalação');
+                }
+                deferredPrompt = null;
+                btnInstalar.style.display = 'none'; // Esconde o ícone após a ação
+            }
+        });
+
+        // Esconder se já estiver instalada
+        window.addEventListener('appinstalled', () => {
+            btnInstalar.style.display = 'none';
+        });
+    </script>
+
     <!-- SCRIPT DO PAINEL ADMIN COM AUTENTICAÇÃO DO FIREBASE -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -359,7 +423,6 @@
             conteudoProdutos.style.display = "none";
         });
 
-        // Validação de login lendo os campos do formulário
         formLogin.addEventListener("submit", async (e) => {
             e.preventDefault();
             erroLogin.textContent = "";
@@ -371,7 +434,7 @@
                 iniciarOuvintesAdmin();
             } catch (error) {
                 console.error("Erro no login:", error);
-                erroLogin.textContent = "E-mail ou palavra-passe incorretos!";
+                erroLogin.textContent = "Erro Firebase: " + error.code;
             }
         });
 
@@ -394,13 +457,7 @@
             if (snapshotProd.empty) {
                 const produtosIniciais = [
                     { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "../imagens/poema-kids.jpg", esgotado: false },
-                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false },
-                    { nome: "Clássico da Casa", categoria: "hamburgueres", preco: 32.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.", imagem: "../imagens/classico-da-casa.jpg", esgotado: false },
-                    { nome: "Du'Chef", categoria: "hamburgueres", preco: 35.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.", imagem: "../imagens/duchef.jpg", esgotado: false },
-                    { nome: "Poema Tropical", categoria: "hamburgueres", preco: 37.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.", imagem: "../imagens/poema-tropical.jpg", esgotado: false },
-                    { nome: "Porção de Fritas", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/fritas.jpg", esgotado: false },
-                    { nome: "Porção de Onion Rings", categoria: "porcoes", preco: 10.00, descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/onion-rings.jpg", esgotado: false },
-                    { nome: "Fritas Feliz", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.", imagem: "../imagens/fritas-feliz.jpg", esgotado: false }
+                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false }
                 ];
                 for (const prod of produtosIniciais) {
                     await addDoc(collection(db, "produtos"), prod);
@@ -410,14 +467,7 @@
             if (snapshotAdic.empty) {
                 const adicionaisIniciais = [
                     { nome: "Bacon", preco: 5.00, esgotado: false },
-                    { nome: "Cebola caramelizada", preco: 4.00, esgotado: false },
-                    { nome: "Abacaxi grelhado", preco: 4.00, esgotado: false },
-                    { nome: "Blend bovino 150g", preco: 8.00, esgotado: false },
-                    { nome: "Smash bovino 75g", preco: 5.00, esgotado: false },
-                    { nome: "Queijo cheddar", preco: 6.00, esgotado: false },
-                    { nome: "Queijo mussarela", preco: 4.00, esgotado: false },
-                    { nome: "Anéis de cebola", preco: 4.00, esgotado: false },
-                    { nome: "Pote de maionese extra", preco: 2.00, esgotado: false }
+                    { nome: "Cebola caramelizada", preco: 4.00, esgotado: false }
                 ];
                 for (const adic of adicionaisIniciais) {
                     await addDoc(collection(db, "adicionais"), adic);
