@@ -3,7 +3,7 @@
 ========================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
@@ -30,123 +30,131 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     }
 });
 
-// Ouve os produtos em tempo real e insere os padrão se estiver vazio
-onSnapshot(collection(db, "produtos"), async (snapshot) => {
-    const hamburgueresContainer = document.getElementById("lista-hamburgueres");
-    const porcoesContainer = document.getElementById("lista-porcoes");
+// Função para popular automaticamente os produtos se a base estiver vazia
+async function verificarEPopularProdutos() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "produtos"));
+        if (querySnapshot.empty) {
+            const produtosIniciais = [
+                {
+                    nome: "Poema Kids",
+                    categoria: "hamburgueres",
+                    preco: 25.00,
+                    descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.\n        “É a vez dos pequenos.”",
+                    imagem: "imagens/poema-kids.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Smash 301",
+                    categoria: "hamburgueres",
+                    preco: 29.00,
+                    descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.\n        “Para aquela fominha.”",
+                    imagem: "imagens/smash-301.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Clássico da Casa",
+                    categoria: "hamburgueres",
+                    preco: 32.00,
+                    descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.\n        “Clássico que não sai de moda.”",
+                    imagem: "imagens/classico-da-casa.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Du'Chef",
+                    categoria: "hamburgueres",
+                    preco: 35.00,
+                    descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.\n        “O favorito.”",
+                    imagem: "imagens/duchef.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Poema Tropical",
+                    categoria: "hamburgueres",
+                    preco: 37.00,
+                    descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.\n        “Uma experiência gastronômica.”",
+                    imagem: "imagens/poema-tropical.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Porção de Fritas",
+                    categoria: "porcoes",
+                    preco: 10.00,
+                    descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.\n        “O que estava faltando.”",
+                    imagem: "imagens/fritas.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Porção de Onion Rings",
+                    categoria: "porcoes",
+                    preco: 10.00,
+                    descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.\n        “Vai ficar de fora?”",
+                    imagem: "imagens/onion-rings.jpg",
+                    esgotado: false
+                },
+                {
+                    nome: "Fritas Feliz",
+                    categoria: "porcoes",
+                    preco: 10.00,
+                    descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.\n        “Os pequenos adoram.”",
+                    imagem: "imagens/fritas-feliz.jpg",
+                    esgotado: false
+                }
+            ];
 
-    if (!hamburgueresContainer || !porcoesContainer) return;
-
-    // IMPORTAÇÃO AUTOMÁTICA SE A BASE DE DADOS ESTIVER VAZIA
-    if (snapshot.empty) {
-        const produtosIniciais = [
-            {
-                nome: "Poema Kids",
-                categoria: "hamburgueres",
-                preco: 25.00,
-                descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.\n        “É a vez dos pequenos.”",
-                imagem: "imagens/poema-kids.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Smash 301",
-                categoria: "hamburgueres",
-                preco: 29.00,
-                descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.\n        “Para aquela fominha.”",
-                imagem: "imagens/smash-301.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Clássico da Casa",
-                categoria: "hamburgueres",
-                preco: 32.00,
-                descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.\n        “Clássico que não sai de moda.”",
-                imagem: "imagens/classico-da-casa.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Du'Chef",
-                categoria: "hamburgueres",
-                preco: 35.00,
-                descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.\n        “O favorito.”",
-                imagem: "imagens/duchef.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Poema Tropical",
-                categoria: "hamburgueres",
-                preco: 37.00,
-                descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.\n        “Uma experiência gastronômica.”",
-                imagem: "imagens/poema-tropical.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Porção de Fritas",
-                categoria: "porcoes",
-                preco: 10.00,
-                descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.\n        “O que estava faltando.”",
-                imagem: "imagens/fritas.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Porção de Onion Rings",
-                categoria: "porcoes",
-                preco: 10.00,
-                descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.\n        “Vai ficar de fora?”",
-                imagem: "imagens/onion-rings.jpg",
-                esgotado: false
-            },
-            {
-                nome: "Fritas Feliz",
-                categoria: "porcoes",
-                preco: 10.00,
-                descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.\n        “Os pequenos adoram.”",
-                imagem: "imagens/fritas-feliz.jpg",
-                esgotado: false
+            for (const prod of produtosIniciais) {
+                await addDoc(collection(db, "produtos"), prod);
             }
-        ];
-
-        for (const prod of produtosIniciais) {
-            await addDoc(collection(db, "produtos"), prod);
         }
-        return; // O snapshot atualiza sozinho logo após inserir
+    } catch (error) {
+        console.error("Erro ao popular produtos:", error);
     }
+}
 
-    hamburgueresContainer.innerHTML = "";
-    porcoesContainer.innerHTML = "";
+// Inicia a verificação e depois ativa o ouvinte do cardápio
+verificarEPopularProdutos().then(() => {
+    onSnapshot(collection(db, "produtos"), (snapshot) => {
+        const hamburgueresContainer = document.getElementById("lista-hamburgueres");
+        const porcoesContainer = document.getElementById("lista-porcoes");
 
-    snapshot.forEach((docSnap) => {
-        const p = docSnap.data();
-        
-        const artigo = document.createElement("article");
-        artigo.className = "produto";
-        if (p.esgotado) {
-            artigo.style.filter = "grayscale(100%) opacity(0.5)";
-        }
+        if (!hamburgueresContainer || !porcoesContainer) return;
 
-        artigo.innerHTML = `
-            <div class="produto-imagem" style="position: relative;">
-                <img src="${p.imagem}" alt="${p.nome}">
-                ${p.esgotado ? '<span class="selo-esgotado" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 6px 14px; border-radius: 5px; font-weight: bold; font-size: 14px; z-index: 2;">ESGOTADO</span>' : ''}
-            </div>
-            <div class="produto-informacoes">
-                <h3>${p.nome}</h3>
-                <p class="descricao">${p.descricao.replace(/\n/g, '<br>')}</p>
-                <p class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</p>
-                <button type="button" class="botao-adicionar" data-produto="${p.nome}" data-preco="${p.preco}" ${p.esgotado ? 'disabled style="background-color: #555555; cursor: not-allowed;"' : ''}>
-                    ${p.esgotado ? 'ESGOTADO' : 'Adicionar'}
-                </button>
-            </div>
-        `;
+        hamburgueresContainer.innerHTML = "";
+        porcoesContainer.innerHTML = "";
 
-        if (p.categoria === "hamburgueres") {
-            hamburgueresContainer.appendChild(artigo);
-        } else {
-            porcoesContainer.appendChild(artigo);
-        }
+        snapshot.forEach((docSnap) => {
+            const p = docSnap.data();
+            
+            const artigo = document.createElement("article");
+            artigo.className = "produto";
+            if (p.esgotado) {
+                artigo.style.filter = "grayscale(100%) opacity(0.5)";
+            }
+
+            artigo.innerHTML = `
+                <div class="produto-imagem" style="position: relative;">
+                    <img src="${p.imagem}" alt="${p.nome}">
+                    ${p.esgotado ? '<span class="selo-esgotado" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.85); color: #fff; padding: 6px 14px; border-radius: 5px; font-weight: bold; font-size: 14px; z-index: 2;">ESGOTADO</span>' : ''}
+                </div>
+                <div class="produto-informacoes">
+                    <h3>${p.nome}</h3>
+                    <p class="descricao">${p.descricao.replace(/\n/g, '<br>')}</p>
+                    <p class="preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</p>
+                    <button type="button" class="botao-adicionar" data-produto="${p.nome}" data-preco="${p.preco}" ${p.esgotado ? 'disabled style="background-color: #555555; cursor: not-allowed;"' : ''}>
+                        ${p.esgotado ? 'ESGOTADO' : 'Adicionar'}
+                    </button>
+                </div>
+            `;
+
+            if (p.categoria === "hamburgueres") {
+                hamburgueresContainer.appendChild(artigo);
+            } else {
+                porcoesContainer.appendChild(artigo);
+            }
+        });
+
+        reativarEventosBotoes();
     });
-
-    reativarEventosBotoes();
 });
 
 function pedidosEstaoAbertos() {
