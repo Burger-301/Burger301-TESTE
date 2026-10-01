@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Burger 301</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            height: fit-content;
+        }
+        h2 { color: #f28c28; text-align: center; margin-bottom: 20px; }
+        .campo { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background: #2a2a2a;
+            color: #fff;
+            font-size: 15px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #f28c28;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #d96f0c; }
+        .painel-conteudo { display: none; }
+        .status-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .btn-status {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            width: auto;
+        }
+        .ativo { background-color: #22c55e; color: white; } /* Verde */
+        .inativo { background-color: #ef4444; color: white; } /* Vermelho */
+        
+        .abas-admin {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+        }
+        .btn-aba {
+            flex: 1;
+            padding: 10px;
+            background: #2a2a2a;
+            color: #aaa;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-aba.ativa {
+            background: #f28c28;
+            color: #fff;
+        }
+
+        .secao-painel {
+            background: #252525;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .secao-painel h3 { color: #f28c28; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 8px; }
+        
+        .lista-admin-produtos {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .item-admin-produto {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .item-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .item-botoes {
+            display: flex;
+            gap: 5px;
+        }
+        .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
+
+        /* ESTILOS DA JANELA FLUTUANTE DE AJUDA */
+        #modal-ajuda-img {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        .modal-ajuda-conteudo {
+            background: #222;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            position: relative;
+            border: 1px solid #444;
+        }
+        .btn-fechar-ajuda {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            width: auto;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- TELA DE LOGIN -->
+        <div id="tela-login">
+            <h2>🔒 Área Restrita</h2>
+            <div class="campo">
+                <label for="senha">Palavra-passe:</label>
+                <input type="password" id="senha" placeholder="Digite a senha">
+            </div>
+            <button id="btn-entrar">Entrar no Painel</button>
+            <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px;"></p>
+        </div>
+
+        <!-- PAINEL DE CONTROLE -->
+        <div id="painel-controle" class="painel-conteudo">
+            <h2>⚙️ Painel Burger 301</h2>
+            
+            <!-- STATUS DA LOJA -->
+            <div class="status-box">
+                <span>Status da Loja:</span>
+                <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
+            </div>
+
+            <!-- ABAS DE NAVEGAÇÃO -->
+            <div class="abas-admin">
+                <button class="btn-aba ativa" id="tab-produtos">🍔 Produtos</button>
+                <button class="btn-aba" id="tab-adicionais">➕ Adicionais</button>
+            </div>
+
+            <!-- SEÇÃO DE PRODUTOS -->
+            <div id="conteudo-produtos">
+                <div class="secao-painel">
+                    <h3 id="titulo-form-produto">➕ Adicionar Novo Produto</h3>
+                    <input type="hidden" id="edit-id" value="">
+                    <div class="campo">
+                        <label>Nome do Produto:</label>
+                        <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
+                    </div>
+                    <div class="campo">
+                        <label>Categoria:</label>
+                        <select id="novo-categoria">
+                            <option value="hamburgueres">Hambúrgueres</option>
+                            <option value="porcoes">Porções</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label>Preço (R$):</label>
+                        <input type="text" id="novo-preco" placeholder="Ex: 35.00">
+                    </div>
+                    <div class="campo">
+                        <label>Descrição:</label>
+                        <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
+                    </div>
+                    <div class="campo">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <label style="margin-bottom: 0;">Imagem PNG (Caminho):</label>
+                            <button type="button" id="btn-ajuda-img" style="width: 24px; height: 24px; padding: 0; font-size: 12px; background: #3b82f6; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</button>
+                        </div>
+                        <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="imagens/">
+                    </div>
+                    <button id="btn-salvar-produto">Cadastrar Produto</button>
+                    <button id="btn-cancelar-edicao" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                </div>
+
+                <div class="secao-painel">
+                    <h3>📦 Gerenciar Produtos</h3>
+                    <div id="lista-gestao-produtos" class="lista-admin-produtos">
+                        <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SEÇÃO DE ADICIONAIS -->
+            <div id="conteudo-adicionais" style="display: none;">
+                <div class="secao-painel">
+                    <h3 id="titulo-form-adicional">➕ Adicionar Novo Adicional</h3>
+                    <input type="hidden" id="edit-id-adic" value="">
+                    <div class="campo">
+                        <label>Nome do Adicional:</label>
+                        <input type="text" id="adic-nome" placeholder="Ex: Bacon Extra">
+                    </div>
+                    <div class="campo">
+                        <label>Preço (R$):</label>
+                        <input type="text" id="adic-preco" placeholder="Ex: 5.00">
+                    </div>
+                    <button id="btn-salvar-adicional">Cadastrar Adicional</button>
+                    <button id="btn-cancelar-edicao-adic" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                </div>
+
+                <div class="secao-painel">
+                    <h3>🧀 Gerenciar Adicionais</h3>
+                    <div id="lista-gestao-adicionais" class="lista-admin-produtos">
+                        <p style="font-size: 13px; color: #777;">A carregar adicionais...</p>
+                    </div>
+                </div>
+            </div>
+
+            <p id="msg-sucesso" class="msg"></p>
+            <button id="btn-sair" style="background-color: #444; margin-top: 10px;">Sair</button>
+        </div>
+    </div>
+
+    <!-- JANELA FLUTUANTE (MODAL) DE AJUDA DA IMAGEM -->
+    <div id="modal-ajuda-img">
+        <div class="modal-ajuda-conteudo">
+            <button type="button" id="fechar-ajuda-img" class="btn-fechar-ajuda">✕</button>
+            <h3 style="color: #f28c28; margin-top: 0;">💡 Como adicionar imagens?</h3>
+            <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
+                Como o site está hospedado no GitHub Pages, os ficheiros de imagem devem ser colocados diretamente na pasta <b>imagens/</b> do seu repositório.
+            </p>
+            <p style="font-size: 14px; line-height: 1.5; color: #ccc;">
+                <b>Passo a passo recomendado:</b><br>
+                1. Faça o upload da sua imagem PNG para a pasta <code>imagens/</code> no GitHub.<br>
+                2. No campo de imagem, digite o caminho exato do ficheiro, por exemplo:<br>
+                <code>imagens/nome-da-foto.png</code>
+            </p>
+        </div>
+    </div>
+
+    <!-- SCRIPT DO PAINEL ADMIN -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJlQENhh8DbqYLyTl4zwvyqLGRAIMz87Y",
+            authDomain: "burger301-79148.firebaseapp.com",
+            projectId: "burger301-79148",
+            storageBucket: "burger301-79148.firebasestorage.app",
+            messagingSenderId: "681050351563",
+            appId: "1:681050351563:web:7712d7ef3911365a2f784e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const SENHA_ADMIN = "burger301adm"; 
+
+        const telaLogin = document.getElementById("tela-login");
+        const painelControle = document.getElementById("painel-controle");
+        const inputSenha = document.getElementById("senha");
+        const btnEntrar = document.getElementById("btn-entrar");
+        const erroLogin = document.getElementById("erro-login");
+        const btnToggleLoja = document.getElementById("btn-toggle-loja");
+        const msgSucesso = document.getElementById("msg-sucesso");
+        const btnSair = document.getElementById("btn-sair");
+
+        // Lógica do Modal de Ajuda de Imagem
+        const btnAjudaImg = document.getElementById("btn-ajuda-img");
+        const modalAjudaImg = document.getElementById("modal-ajuda-img");
+        const fecharAjudaImg = document.getElementById("fechar-ajuda-img");
+
+        btnAjudaImg.addEventListener("click", () => {
+            modalAjudaImg.style.display = "flex";
+        });
+
+        fecharAjudaImg.addEventListener("click", () => {
+            modalAjudaImg.style.display = "none";
+        });
+
+        modalAjudaImg.addEventListener("click", (e) => {
+            if (e.target === modalAjudaImg) {
+                modalAjudaImg.style.display = "none";
+            }
+        });
+
+        // Controlo de Abas
+        const tabProdutos = document.getElementById("tab-produtos");
+        const tabAdicionais = document.getElementById("tab-adicionais");
+        const conteudoProdutos = document.getElementById("conteudo-produtos");
+        const conteudoAdicionais = document.getElementById("conteudo-adicionais");
+
+        tabProdutos.addEventListener("click", () => {
+            tabProdutos.classList.add("ativa");
+            tabAdicionais.classList.remove("ativa");
+            conteudoProdutos.style.display = "block";
+            conteudoAdicionais.style.display = "none";
+        });
+
+        tabAdicionais.addEventListener("click", () => {
+            tabAdicionais.classList.add("ativa");
+            tabProdutos.classList.remove("ativa");
+            conteudoAdicionais.style.display = "block";
+            conteudoProdutos.style.display = "none";
+        });
+
+        btnEntrar.addEventListener("click", () => {
+            if (inputSenha.value === SENHA_ADMIN) {
+                telaLogin.style.display = "none";
+                painelControle.style.display = "block";
+                iniciarOuvintesAdmin();
+            } else {
+                erroLogin.textContent = "Palavra-passe incorreta!";
+            }
+        });
+
+        btnSair.addEventListener("click", () => {
+            painelControle.style.display = "none";
+            telaLogin.style.display = "block";
+            inputSenha.value = "";
+            erroLogin.textContent = "";
+        });
+
+        const docRefConfig = doc(db, "configuracoes", "loja");
+        
+        async function verificarEPopularDados(snapshotProd, snapshotAdic) {
+            if (snapshotProd.empty) {
+                const produtosIniciais = [
+                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "imagens/poema-kids.jpg", esgotado: false },
+                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "imagens/smash-301.jpg", esgotado: false },
+                    { nome: "Clássico da Casa", categoria: "hamburgueres", preco: 32.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.", imagem: "imagens/classico-da-casa.jpg", esgotado: false },
+                    { nome: "Du'Chef", categoria: "hamburgueres", preco: 35.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.", imagem: "imagens/duchef.jpg", esgotado: false },
+                    { nome: "Poema Tropical", categoria: "hamburgueres", preco: 37.00, descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.", imagem: "imagens/poema-tropical.jpg", esgotado: false },
+                    { nome: "Porção de Fritas", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas.jpg", esgotado: false },
+                    { nome: "Porção de Onion Rings", categoria: "porcoes", preco: 10.00, descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/onion-rings.jpg", esgotado: false },
+                    { nome: "Fritas Feliz", categoria: "porcoes", preco: 10.00, descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.", imagem: "imagens/fritas-feliz.jpg", esgotado: false }
+                ];
+                for (const prod of produtosIniciais) {
+                    await addDoc(collection(db, "produtos"), prod);
+                }
+            }
+
+            if (snapshotAdic.empty) {
+                const adicionaisIniciais = [
+                    { nome: "Bacon", preco: 5.00, esgotado: false },
+                    { nome: "Cebola caramelizada", preco: 4.00, esgotado: false },
+                    { nome: "Abacaxi grelhado", preco: 4.00, esgotado: false },
+                    { nome: "Blend bovino 150g", preco: 8.00, esgotado: false },
+                    { nome: "Smash bovino 75g", preco: 5.00, esgotado: false },
+                    { nome: "Queijo cheddar", preco: 6.00, esgotado: false },
+                    { nome: "Queijo mussarela", preco: 4.00, esgotado: false },
+                    { nome: "Anéis de cebola", preco: 4.00, esgotado: false },
+                    { nome: "Pote de maionese extra", preco: 2.00, esgotado: false }
+                ];
+                for (const adic of adicionaisIniciais) {
+                    await addDoc(collection(db, "adicionais"), adic);
+                }
+            }
+        }
+
+        async function iniciarOuvintesAdmin() {
+            onSnapshot(docRefConfig, async (docSnap) => {
+                if (docSnap.exists()) {
+                    atualizarBotaoLoja(docSnap.data().aberto);
+                } else {
+                    await setDoc(docRefConfig, { aberto: true });
+                    atualizarBotaoLoja(true);
+                }
+            });
+
+            const snapProd = await getDocs(collection(db, "produtos"));
+            const snapAdic = await getDocs(collection(db, "adicionais"));
+            await verificarEPopularDados(snapProd, snapAdic);
+
+            // Ouvinte de Produtos
+            onSnapshot(collection(db, "produtos"), (snapshot) => {
+                renderizarListaProdutos(snapshot);
+            });
+
+            // Ouvinte de Adicionais
+            onSnapshot(collection(db, "adicionais"), (snapshot) => {
+                renderizarListaAdicionais(snapshot);
+            });
+        }
+
+        function atualizarBotaoLoja(aberto) {
+            if (aberto) {
+                btnToggleLoja.textContent = "Aberto";
+                btnToggleLoja.className = "btn-status ativo";
+            } else {
+                btnToggleLoja.textContent = "Fechado";
+                btnToggleLoja.className = "btn-status inativo";
+            }
+        }
+
+        btnToggleLoja.addEventListener("click", async () => {
+            const docSnap = await getDoc(docRefConfig);
+            const estadoAtual = docSnap.exists() ? docSnap.data().aberto : true;
+            const novoEstado = !estadoAtual;
+            await updateDoc(docRefConfig, { aberto: novoEstado });
+            mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
+        });
+
+        // Gestão de Produtos
+        const btnSalvarProduto = document.getElementById("btn-salvar-produto");
+        const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
+        const tituloFormProduto = document.getElementById("titulo-form-produto");
+        const editIdInput = document.getElementById("edit-id");
+
+        btnSalvarProduto.addEventListener("click", async () => {
+            const idEdicao = editIdInput.value;
+            const nome = document.getElementById("novo-nome").value.trim();
+            const categoria = document.getElementById("novo-categoria").value;
+            const preco = parseFloat(document.getElementById("novo-preco").value.replace(",", "."));
+            const descricao = document.getElementById("novo-descricao").value.trim();
+            const imagem = document.getElementById("novo-imagem").value.trim() || "imagens/icone.png";
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido.");
+                return;
+            }
+
+            if (idEdicao) {
+                await updateDoc(doc(db, "produtos", idEdicao), { nome, categoria, preco, descricao, imagem });
+                mostrarAviso("Produto atualizado com sucesso!");
+                limparFormularioProduto();
+            } else {
+                await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false });
+                mostrarAviso("Produto adicionado com sucesso!");
+                limparFormularioProduto();
+            }
+        });
+
+        btnCancelarEdicao.addEventListener("click", limparFormularioProduto);
+
+        function limparFormularioProduto() {
+            editIdInput.value = "";
+            document.getElementById("novo-nome").value = "";
+            document.getElementById("novo-preco").value = "";
+            document.getElementById("novo-descricao").value = "";
+            document.getElementById("novo-imagem").value = "imagens/";
+            tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
+            btnSalvarProduto.textContent = "Cadastrar Produto";
+            btnCancelarEdicao.style.display = "none";
+        }
+
+        function renderizarListaProdutos(snapshot) {
+            const listaDiv = document.getElementById("lista-gestao-produtos");
+            listaDiv.innerHTML = "";
+
+            if (snapshot.empty) {
+                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum produto cadastrado.</p>";
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const p = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement("div");
+                item.className = "item-admin-produto";
+                item.innerHTML = `
+                    <div class="item-topo">
+                        <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
+                    </div>
+                    <div class="item-botoes">
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
+                            ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
+                        </button>
+                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
+                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
+                    </div>
+                `;
+                listaDiv.appendChild(item);
+            });
+
+            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    const acao = e.target.dataset.acao;
+                    const id = e.target.dataset.id;
+
+                    if (acao === "toggle-prod") {
+                        const esgotadoAtual = e.target.dataset.esgotado === "true";
+                        await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
+                    } else if (acao === "apagar-prod") {
+                        if (confirm("Deseja excluir este produto?")) {
+                            await deleteDoc(doc(db, "produtos", id));
+                            mostrarAviso("Produto excluído!");
+                        }
+                    } else if (acao === "editar-prod") {
+                        editIdInput.value = id;
+                        document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
+                        document.getElementById("novo-categoria").value = e.target.dataset.cat;
+                        document.getElementById("novo-preco").value = e.target.dataset.preco;
+                        document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
+                        document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
+
+                        tituloFormProduto.textContent = "✏️ Editar Produto";
+                        btnSalvarProduto.textContent = "Salvar Alterações";
+                        btnCancelarEdicao.style.display = "block";
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                });
+            });
+        }
+
+        // Gestão de Adicionais
+        const btnSalvarAdicional = document.getElementById("btn-salvar-adicional");
+        const btnCancelarEdicaoAdic = document.getElementById("btn-cancelar-edicao-adic");
+        const tituloFormAdicional = document.getElementById("titulo-form-adicional");
+        const editIdAdicInput = document.getElementById("edit-id-adic");
+
+        btnSalvarAdicional.addEventListener("click", async () => {
+            const idEdicao = editIdAdicInput.value;
+            const nome = document.getElementById("adic-nome").value.trim();
+            const preco = parseFloat(document.getElementById("adic-preco").value.replace(",", "."));
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido para o adicional.");
+                return;
+            }
+
+            if (idEdicao) {
+                await updateDoc(doc(db, "adicionais", idEdicao), { nome, preco });
+                mostrarAviso("Adicional atualizado com sucesso!");
+                limparFormularioAdicional();
+            } else {
+                await addDoc(collection(db, "adicionais"), { nome, preco, esgotado: false });
+                mostrarAviso("Adicional adicionado com sucesso!");
+                limparFormularioAdicional();
+            }
+        });
+
+        btnCancelarEdicaoAdic.addEventListener("click", limparFormularioAdicional);
+
+        function limparFormularioAdicional() {
+            editIdAdicInput.value = "";
+            document.getElementById("adic-nome").value = "";
+            document.getElementById("adic-preco").value = "";
+            tituloFormAdicional.textContent = "➕ Adicionar Novo Adicional";
+            btnSalvarAdicional.textContent = "Cadastrar Adicional";
+            btnCancelarEdicaoAdic.style.display = "none";
+        }
+
+        function renderizarListaAdicionais(snapshot) {
+            const listaDiv = document.getElementById("lista-gestao-adicionais");
+            listaDiv.innerHTML = "";
+
+            if (snapshot.empty) {
+                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum adicional cadastrado.</p>";
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const a = docSnap.data();
+                const id = docSnap.id;
+
+                const item = document.createElement("div");
+                item.className = "item-admin-produto";
+                item.innerHTML = `
+                    <div class="item-topo">
+                        <span><b>${a.nome}</b> — R$ ${Number(a.preco).toFixed(2)}</span>
+                    </div>
+                    <div class="item-botoes">
+                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
+                            ${a.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
+                        </button>
+                        <button style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
+                        <button style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
+                    </div>
+                `;
+                listaDiv.appendChild(item);
+            });
+
+            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    const acao = e.target.dataset.acao;
+                    const id = e.target.dataset.id;
+
+                    if (acao === "toggle-adic") {
+                        const esgotadoAtual = e.target.dataset.esgotado === "true";
+                        await updateDoc(doc(db, "adicionais", id), { esgotado: !esgotadoAtual });
+                    } else if (acao === "apagar-adic") {
+                        if (confirm("Deseja excluir este adicional?")) {
+                            await deleteDoc(doc(db, "adicionais", id));
+                            mostrarAviso("Adicional excluído!");
+                        }
+                    } else if (acao === "editar-adic") {
+                        editIdAdicInput.value = id;
+                        document.getElementById("adic-nome").value = decodeURIComponent(e.target.dataset.nome);
+                        document.getElementById("adic-preco").value = e.target.dataset.preco;
+
+                        tituloFormAdicional.textContent = "✏️ Editar Adicional";
+                        btnSalvarAdicional.textContent = "Salvar Alterações";
+                        btnCancelarEdicaoAdic.style.display = "block";
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                });
+            });
+        }
+
+        function mostrarAviso(texto) {
+            msgSucesso.textContent = texto;
+            setTimeout(() => msgSucesso.textContent = "", 2500);
+        }
+    </script>
+</body>
+</html>
