@@ -33,9 +33,20 @@ let quantidadeAtual = 1;
 let statusLojaAdmin = true; 
 let numeroWhatsAppAdmin = "5551981061618"; // Número de fallback padrão caso não carregue do Firebase
 
+// Configurações da Promoção do Dia
+let promoConfig = {
+    ativa: false,
+    produtoId: "",
+    preco: 0,
+    descricao: ""
+};
+
+let listaProdutosCache = [];
+
 // Lista de produtos padrão garantida (fallback)
 const produtosPadraoSeguro = [
     {
+        id: "padrao-1",
         nome: "Poema Kids",
         categoria: "hamburgueres",
         preco: 25.00,
@@ -45,6 +56,7 @@ const produtosPadraoSeguro = [
         ordem: 0
     },
     {
+        id: "padrao-2",
         nome: "Smash 301",
         categoria: "hamburgueres",
         preco: 29.00,
@@ -54,6 +66,7 @@ const produtosPadraoSeguro = [
         ordem: 1
     },
     {
+        id: "padrao-3",
         nome: "Clássico da Casa",
         categoria: "hamburgueres",
         preco: 32.00,
@@ -63,6 +76,7 @@ const produtosPadraoSeguro = [
         ordem: 2
     },
     {
+        id: "padrao-4",
         nome: "Du'Chef",
         categoria: "hamburgueres",
         preco: 35.00,
@@ -72,6 +86,7 @@ const produtosPadraoSeguro = [
         ordem: 3
     },
     {
+        id: "padrao-5",
         nome: "Poema Tropical",
         categoria: "hamburgueres",
         preco: 37.00,
@@ -81,6 +96,7 @@ const produtosPadraoSeguro = [
         ordem: 4
     },
     {
+        id: "padrao-6",
         nome: "Porção de Fritas",
         categoria: "porcoes",
         preco: 10.00,
@@ -90,6 +106,7 @@ const produtosPadraoSeguro = [
         ordem: 5
     },
     {
+        id: "padrao-7",
         nome: "Porção de Onion Rings",
         categoria: "porcoes",
         preco: 10.00,
@@ -99,6 +116,7 @@ const produtosPadraoSeguro = [
         ordem: 6
     },
     {
+        id: "padrao-8",
         nome: "Fritas Feliz",
         categoria: "porcoes",
         preco: 10.00,
@@ -109,23 +127,30 @@ const produtosPadraoSeguro = [
     }
 ];
 
-// Ouve o status e o número do WhatsApp da loja em tempo real
+// Ouve o status, WhatsApp e Promoção da loja em tempo real
 onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     if (docSnap.exists()) {
         const dados = docSnap.data();
         statusLojaAdmin = dados.aberto;
         atualizarStatusHeader();
         
+        promoConfig = {
+            ativa: dados.promocaoAtiva || false,
+            produtoId: dados.promocaoProdutoId || "",
+            preco: Number(dados.promocaoPreco) || 0,
+            descricao: dados.promocaoDescricao || ""
+        };
+
+        renderizarBannerPromocao();
+        
         if (dados.whatsapp) {
             numeroWhatsAppAdmin = dados.whatsapp;
 
-            // Atualiza dinamicamente o link do botão de dúvidas no cabeçalho
             const botaoWhatsHeader = document.querySelector(".botao-whats-header");
             if (botaoWhatsHeader) {
                 botaoWhatsHeader.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
             }
 
-            // Atualiza dinamicamente o link do botão de dúvidas no rodapé
             const botaoDuvidasRodape = document.querySelector(".botao-duvidas-whatsapp");
             if (botaoDuvidasRodape) {
                 botaoDuvidasRodape.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
@@ -138,21 +163,27 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
 try {
     onSnapshot(collection(db, "produtos"), (snapshot) => {
         if (snapshot.empty) {
+            listaProdutosCache = produtosPadraoSeguro;
             renderizarCardapio(produtosPadraoSeguro);
         } else {
             const listaDinamica = [];
             snapshot.forEach((docSnap) => {
-                listaDinamica.push(docSnap.data());
+                listaDinamica.push({ id: docSnap.id, ...docSnap.data() });
             });
-            // Ordena os produtos com base no campo ordem configurado no painel admin
             listaDinamica.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+            listaProdutosCache = listaDinamica;
             renderizarCardapio(listaDinamica);
         }
+        renderizarBannerPromocao();
     }, () => {
+        listaProdutosCache = produtosPadraoSeguro;
         renderizarCardapio(produtosPadraoSeguro);
+        renderizarBannerPromocao();
     });
 } catch (e) {
+    listaProdutosCache = produtosPadraoSeguro;
     renderizarCardapio(produtosPadraoSeguro);
+    renderizarBannerPromocao();
 }
 
 // Ouve os adicionais do Firebase em tempo real (Atualiza disponibilidade)
@@ -183,13 +214,67 @@ try {
             listaAdicionaisContainer.appendChild(label);
         });
 
-        // Reatribui evento para atualizar total do modal ao mudar adicionais
         document.querySelectorAll('#modal-produto input[name="adicional"]').forEach(c => {
             c.addEventListener("change", atualizarTotalModal);
         });
     });
 } catch (e) {
     console.error("Erro ao carregar adicionais:", e);
+}
+
+// Renderiza o Banner de Promoção do Dia no topo do cardápio se estiver ativa
+function renderizarBannerPromocao() {
+    let bannerContainer = document.getElementById("banner-promocao-container");
+    const hamburgueresContainer = document.getElementById("lista-hamburgueres");
+
+    if (!hamburgueresContainer) return;
+
+    if (!bannerContainer) {
+        bannerContainer = document.createElement("div");
+        bannerContainer.id = "banner-promocao-container";
+        hamburgueresContainer.parentNode.insertBefore(bannerContainer, hamburgueresContainer);
+    }
+
+    if (!promoConfig.ativa || !promoConfig.produtoId) {
+        bannerContainer.innerHTML = "";
+        bannerContainer.style.display = "none";
+        return;
+    }
+
+    const produtoPromo = listaProdutosCache.find(p => p.id === promoConfig.produtoId);
+    if (!produtoPromo) {
+        bannerContainer.innerHTML = "";
+        bannerContainer.style.display = "none";
+        return;
+    }
+
+    bannerContainer.style.display = "block";
+    bannerContainer.innerHTML = `
+        <div style="background: linear-gradient(135deg, #f28c28, #d96f0c); padding: 2px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(242,140,40,0.3);">
+            <div style="background: #1e1e1e; padding: 15px; border-radius: 9px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                <div style="flex: 0 0 100px; height: 100px; border-radius: 6px; overflow: hidden; position: relative;">
+                    <img src="${produtoPromo.imagem}" alt="${produtoPromo.nome}" style="width: 100%; height: 100%; object-fit: cover;">
+                    <span style="position: absolute; top: 5px; left: 5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">PROMO</span>
+                </div>
+                <div style="flex: 1; min-width: 200px;">
+                    <span style="color: #f28c28; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🔥 Promoção do Dia</span>
+                    <h3 style="margin: 5px 0; color: #fff; font-size: 18px;">${produtoPromo.nome}</h3>
+                    <p style="margin: 0 0 8px 0; color: #ccc; font-size: 13px;">${promoConfig.descricao || produtoPromo.descricao}</p>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="text-decoration: line-through; color: #777; font-size: 14px;">R$ ${Number(produtoPromo.preco).toFixed(2).replace('.', ',')}</span>
+                        <span style="color: #4ade80; font-size: 18px; font-weight: bold;">R$ ${Number(promoConfig.preco).toFixed(2).replace('.', ',')}</span>
+                    </div>
+                </div>
+                <div style="width: 100%; text-align: right;">
+                    <button type="button" class="botao-adicionar" data-produto="${produtoPromo.nome}" data-preco="${promoConfig.preco}" style="background-color: #22c55e; width: auto; padding: 10px 20px; font-size: 14px;">
+                        Aproveitar Promoção
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    reativarEventosBotoes();
 }
 
 // Função para desenhar os produtos no HTML
@@ -419,7 +504,6 @@ adicionarCarrinhoModal.addEventListener("click", () => {
 });
 
 function atualizarCarrinho() {
-    // Salva o carrinho no localStorage do navegador sempre que houver alteração
     try {
         localStorage.setItem("carrinho_burger301", JSON.stringify(carrinho));
     } catch (e) {
@@ -544,8 +628,8 @@ formularioPedido.onsubmit = (e) => {
         const sub = item.valorUnitario * item.quantidade;
         total += sub;
         msg += `\n${i + 1}. ${item.quantidade}x ${item.nome} — ${formatarMoeda(sub)}\n`;
-        item.adicionais.forEach(a => msg += `   + ${a.nome}\n`);
-        if (item.observacao) msg += `   📝 ${item.observacao}\n`;
+        item.adicionais.forEach(a => msg += `    + ${a.nome}\n`);
+        if (item.observacao) msg += `    📝 ${item.observacao}\n`;
     });
 
     msg += `\n💰 *TOTAL DO PEDIDO:* ${formatarMoeda(total)}`;
@@ -553,7 +637,6 @@ formularioPedido.onsubmit = (e) => {
     const urlWhatsApp = `https://wa.me/${numeroWhatsAppAdmin}?text=${encodeURIComponent(msg)}`;
     window.open(urlWhatsApp, "_blank");
 
-    // Limpa o carrinho e o localStorage após finalizar com sucesso
     carrinho = [];
     localStorage.removeItem("carrinho_burger301");
     atualizarCarrinho();
@@ -562,5 +645,4 @@ formularioPedido.onsubmit = (e) => {
     dadosPedido.classList.remove("visivel");
 };
 
-// Renderiza o carrinho inicial ao carregar a página caso já existam itens salvos
 atualizarCarrinho();
