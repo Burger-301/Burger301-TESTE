@@ -152,7 +152,7 @@
         .item-botoes {
             display: flex;
             gap: 4px;
-            flex-wrap: wrap;
+            align-items: center;
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
 
@@ -611,13 +611,13 @@
                         <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
                     </div>
                     <div class="item-botoes">
-                        <button type="button" style="background: #444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="subir-prod" data-id="${id}" ${index === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>⬆️</button>
-                        <button type="button" style="background: #444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="descer-prod" data-id="${id}" ${index === produtosArray.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>⬇️</button>
-                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
+                        <button type="button" style="background: #444; width: 30px; height: 32px; padding: 0; font-size: 12px; border-radius:4px; border:none; color:white; cursor:pointer; display: flex; align-items: center; justify-content: center;" data-acao="subir-prod" data-id="${id}" ${index === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed; width:30px; height:32px;"' : ''}>⬆️</button>
+                        <button type="button" style="background: #444; width: 30px; height: 32px; padding: 0; font-size: 12px; border-radius:4px; border:none; color:white; cursor:pointer; display: flex; align-items: center; justify-content: center;" data-acao="descer-prod" data-id="${id}" ${index === produtosArray.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed; width:30px; height:32px;"' : ''}>⬇️</button>
+                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 7px 10px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
                             ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button type="button" style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
-                        <button type="button" style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
+                        <button type="button" style="background: #3b82f6; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
+                        <button type="button" style="background: #ef4444; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
@@ -657,7 +657,7 @@
                         document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
                         document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
 
-                        tituloFormProduto.textContent = "✏️️ Editar Produto";
+                        tituloFormProduto.textContent = "✏ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
                         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -723,11 +723,11 @@
                         <span><b>${a.nome}</b> — R$ ${Number(a.preco).toFixed(2)}</span>
                     </div>
                     <div class="item-botoes">
-                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
+                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 7px 10px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
                             ${a.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
-                        <button type="button" style="background: #3b82f6; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
-                        <button type="button" style="background: #ef4444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
+                        <button type="button" style="background: #3b82f6; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
+                        <button type="button" style="background: #ef4444; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
                     </div>
                 `;
                 listaDiv.appendChild(item);
