@@ -241,6 +241,32 @@
                 <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
             </div>
 
+            <!-- PROMOÇÃO DO DIA -->
+            <div class="secao-painel">
+                <h3>🔥 Promoção do Dia</h3>
+                
+                <div class="status-box">
+                    <span>Status da Promoção:</span>
+                    <button id="btn-toggle-promocao" class="btn-status inativo">Inativa</button>
+                </div>
+
+                <div class="campo">
+                    <label>Selecionar Produto:</label>
+                    <select id="select-promo-produto">
+                        <option value="">A carregar produtos...</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label>Preço Promocional (R$):</label>
+                    <input type="text" id="input-promo-preco" placeholder="Ex: 25.00">
+                </div>
+                <div class="campo">
+                    <label>Texto em Destaque (Opcional):</label>
+                    <input type="text" id="input-promo-texto" placeholder="Ex: Só hoje com batata extra!">
+                </div>
+                <button id="btn-salvar-promocao" type="button">Salvar Promoção</button>
+            </div>
+
             <!-- ABAS DE NAVEGAÇÃO -->
             <div class="abas-admin">
                 <button class="btn-aba ativa" id="tab-produtos">🍔 Produtos</button>
@@ -399,6 +425,14 @@
         const inputWhatsapp = document.getElementById("input-whatsapp");
         const displayWhatsappAtual = document.getElementById("display-whatsapp-atual");
         const btnSalvarWhatsapp = document.getElementById("btn-salvar-whatsapp");
+        
+        // Elementos da Promoção
+        const btnTogglePromocao = document.getElementById("btn-toggle-promocao");
+        const selectPromoProduto = document.getElementById("select-promo-produto");
+        const inputPromoPreco = document.getElementById("input-promo-preco");
+        const inputPromoTexto = document.getElementById("input-promo-texto");
+        const btnSalvarPromocao = document.getElementById("btn-salvar-promocao");
+
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
@@ -486,15 +520,22 @@
                 if (docSnap.exists()) {
                     const dados = docSnap.data();
                     atualizarBotaoLoja(dados.aberto);
+                    atualizarBotaoPromocao(dados.promocaoAtiva);
+                    
                     if (dados.whatsapp) {
                         inputWhatsapp.value = dados.whatsapp;
                         displayWhatsappAtual.textContent = dados.whatsapp;
                     } else {
                         displayWhatsappAtual.textContent = "Nenhum definido";
                     }
+
+                    if (dados.promocaoProdutoId) selectPromoProduto.value = dados.promocaoProdutoId;
+                    if (dados.promocaoPreco !== undefined) inputPromoPreco.value = dados.promocaoPreco;
+                    if (dados.promocaoDescricao) inputPromoTexto.value = dados.promocaoDescricao;
                 } else {
-                    await setDoc(docRefConfig, { aberto: true, whatsapp: "" });
+                    await setDoc(docRefConfig, { aberto: true, whatsapp: "", promocaoAtiva: false, promocaoProdutoId: "", promocaoPreco: "", promocaoDescricao: "" });
                     atualizarBotaoLoja(true);
+                    atualizarBotaoPromocao(false);
                     displayWhatsappAtual.textContent = "Nenhum definido";
                 }
             });
@@ -503,7 +544,10 @@
             const snapAdic = await getDocs(collection(db, "adicionais"));
             await verificarEPopularDados(snapProd, snapAdic);
 
-            onSnapshot(collection(db, "produtos"), (snapshot) => renderizarListaProdutos(snapshot));
+            onSnapshot(collection(db, "produtos"), (snapshot) => {
+                preencherSelectProdutos(snapshot);
+                renderizarListaProdutos(snapshot);
+            });
             onSnapshot(collection(db, "adicionais"), (snapshot) => renderizarListaAdicionais(snapshot));
         }
 
@@ -517,12 +561,30 @@
             }
         }
 
+        function atualizarBotaoPromocao(ativa) {
+            if (ativa) {
+                btnTogglePromocao.textContent = "Ativa";
+                btnTogglePromocao.className = "btn-status ativo";
+            } else {
+                btnTogglePromocao.textContent = "Inativa";
+                btnTogglePromocao.className = "btn-status inativo";
+            }
+        }
+
         btnToggleLoja.addEventListener("click", async () => {
             const docSnap = await getDoc(docRefConfig);
             const estadoAtual = docSnap.exists() ? docSnap.data().aberto : true;
             const novoEstado = !estadoAtual;
             await updateDoc(docRefConfig, { aberto: novoEstado });
             mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
+        });
+
+        btnTogglePromocao.addEventListener("click", async () => {
+            const docSnap = await getDoc(docRefConfig);
+            const estadoAtual = docSnap.exists() ? (docSnap.data().promocaoAtiva || false) : false;
+            const novoEstado = !estadoAtual;
+            await updateDoc(docRefConfig, { promocaoAtiva: novoEstado });
+            mostrarAviso(novoEstado ? "Promoção ativada com sucesso!" : "Promoção desativada!");
         });
 
         btnSalvarWhatsapp.addEventListener("click", async () => {
@@ -534,6 +596,37 @@
             await updateDoc(docRefConfig, { whatsapp: numeroWhatsapp });
             mostrarAviso("Número do WhatsApp salvo com sucesso!");
         });
+
+        btnSalvarPromocao.addEventListener("click", async () => {
+            const produtoId = selectPromoProduto.value;
+            const precoPromocional = parseFloat(inputPromoPreco.value.replace(",", "."));
+            const descricao = inputPromoTexto.value.trim();
+
+            if (!produtoId || isNaN(precoPromocional)) {
+                alert("Selecione um produto e informe um preço promocional válido.");
+                return;
+            }
+
+            await updateDoc(docRefConfig, {
+                promocaoProdutoId: produtoId,
+                promocaoPreco: precoPromocional,
+                promocaoDescricao: descricao
+            });
+            mostrarAviso("Configurações da promoção salvas com sucesso!");
+        });
+
+        function preencherSelectProdutos(snapshot) {
+            const valorAtualSelecionado = selectPromoProduto.value;
+            selectPromoProduto.innerHTML = '<option value="">-- Selecione um produto --</option>';
+            snapshot.forEach((docSnap) => {
+                const p = docSnap.data();
+                const opt = document.createElement("option");
+                opt.value = docSnap.id;
+                opt.textContent = `${p.nome} (R$ ${Number(p.preco).toFixed(2)})`;
+                selectPromoProduto.appendChild(opt);
+            });
+            if (valorAtualSelecionado) selectPromoProduto.value = valorAtualSelecionado;
+        }
 
         const btnSalvarProduto = document.getElementById("btn-salvar-produto");
         const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
