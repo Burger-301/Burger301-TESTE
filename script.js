@@ -21,6 +21,7 @@ let carrinho = [];
 let produtoAtual = null;
 let quantidadeAtual = 1;
 let statusLojaAdmin = true; 
+let numeroWhatsAppAdmin = "5551981061618"; // Número de fallback padrão caso não carregue do Firebase
 
 // Lista de produtos padrão garantida (fallback)
 const produtosPadraoSeguro = [
@@ -90,11 +91,15 @@ const produtosPadraoSeguro = [
     }
 ];
 
-// Ouve o status da loja em tempo real
+// Ouve o status e o número do WhatsApp da loja em tempo real
 onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     if (docSnap.exists()) {
-        statusLojaAdmin = docSnap.data().aberto;
+        const dados = docSnap.data();
+        statusLojaAdmin = dados.aberto;
         atualizarStatusHeader();
+        if (dados.whatsapp) {
+            numeroWhatsAppAdmin = dados.whatsapp;
+        }
     }
 });
 
@@ -500,9 +505,11 @@ formularioPedido.onsubmit = (e) => {
         total += sub;
         msg += `\n${i + 1}. ${item.quantidade}x ${item.nome} — ${formatarMoeda(sub)}\n`;
         item.adicionais.forEach(a => msg += `   + ${a.nome}\n`);
-        if (item.observacao) msg += `   _Obs: ${item.observacao}_\n`;
+        if (item.observacao) msg += `   📝 ${item.observacao}\n`;
     });
 
-    msg += `\n💰 *TOTAL: ${formatarMoeda(total)}*\n📍 *Entrega na entrada da torre.*`;
-    window.open(`https://wa.me/5551981061618?text=${encodeURIComponent(msg)}`, "_blank");
+    msg += `\n💰 *TOTAL DO PEDIDO:* ${formatarMoeda(total)}`;
+
+    const urlWhatsApp = `https://wa.me/${numeroWhatsAppAdmin}?text=${encodeURIComponent(msg)}`;
+    window.open(urlWhatsApp, "_blank");
 };
