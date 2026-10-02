@@ -232,10 +232,11 @@
                     <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
                 </div>
 
-                <div class="campo" style="margin-bottom: 10px;">
+                <div class="campo" style="margin-bottom: 5px;">
                     <label>WhatsApp para Pedidos (com DDI e DDD):</label>
                     <input type="text" id="input-whatsapp" placeholder="Ex: 5551999999999">
                 </div>
+                <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Número atual cadastrado: <b id="display-whatsapp-atual" style="color: #4ade80;">Carregando...</b></p>
                 <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
             </div>
 
@@ -395,6 +396,7 @@
         const erroLogin = document.getElementById("erro-login");
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
         const inputWhatsapp = document.getElementById("input-whatsapp");
+        const displayWhatsappAtual = document.getElementById("display-whatsapp-atual");
         const btnSalvarWhatsapp = document.getElementById("btn-salvar-whatsapp");
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
@@ -485,10 +487,14 @@
                     atualizarBotaoLoja(dados.aberto);
                     if (dados.whatsapp) {
                         inputWhatsapp.value = dados.whatsapp;
+                        displayWhatsappAtual.textContent = dados.whatsapp;
+                    } else {
+                        displayWhatsappAtual.textContent = "Nenhum definido";
                     }
                 } else {
                     await setDoc(docRefConfig, { aberto: true, whatsapp: "" });
                     atualizarBotaoLoja(true);
+                    displayWhatsappAtual.textContent = "Nenhum definido";
                 }
             });
 
@@ -520,8 +526,12 @@
 
         btnSalvarWhatsapp.addEventListener("click", async () => {
             const numeroWhatsapp = inputWhatsapp.value.trim();
+            if (!numeroWhatsapp) {
+                alert("Insira um número de WhatsApp válido.");
+                return;
+            }
             await updateDoc(docRefConfig, { whatsapp: numeroWhatsapp });
-            mostrarAviso("Número do WhatsApp atualizado com sucesso!");
+            mostrarAviso("Número do WhatsApp salvo com sucesso!");
         });
 
         const btnSalvarProduto = document.getElementById("btn-salvar-produto");
