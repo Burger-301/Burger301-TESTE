@@ -34,12 +34,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.5);
             height: fit-content;
-            position: relative; /* Necessário para posicionar o botão de instalar */
+            position: relative;
         }
         
         /* BOTÃO DE INSTALAÇÃO DISCRETO */
         #btn-instalar {
-            display: none; /* Escondido por padrão */
+            display: none;
             position: absolute;
             top: 15px;
             right: 15px;
@@ -90,7 +90,7 @@
             background: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .btn-status {
             padding: 8px 16px;
@@ -198,7 +198,7 @@
         <!-- Ícone discreto de instalação -->
         <button id="btn-instalar" title="Instalar Aplicação">📥</button>
 
-        <!-- TELA DE LOGIN COM CAMPO DE E-MAIL VISÍVEL E LIMPO -->
+        <!-- TELA DE LOGIN -->
         <div id="tela-login">
             <h2 style="margin-top: 10px;">🔒 Área Restrita</h2>
             <form id="form-login">
@@ -214,7 +214,6 @@
             </form>
             <p id="erro-login" style="color: #ef4444; text-align: center; margin-top: 10px; font-size: 14px; word-break: break-all;"></p>
             
-            <!-- ASSINATURA CS CODE SOLUTIONS -->
             <p style="font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 20px; letter-spacing: 0.5px;">
                 Powered by <span style="color: #f28c28; font-weight: bold;">CS Code Solutions</span>
             </p>
@@ -224,10 +223,20 @@
         <div id="painel-controle" class="painel-conteudo">
             <h2 style="margin-top: 10px;">⚙️ Painel Burger 301</h2>
             
-            <!-- STATUS DA LOJA -->
-            <div class="status-box">
-                <span>Status da Loja:</span>
-                <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
+            <!-- CONFIGURAÇÕES GERAIS DA LOJA -->
+            <div class="secao-painel">
+                <h3>⚙️ Configurações da Loja</h3>
+                
+                <div class="status-box">
+                    <span>Status da Loja:</span>
+                    <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
+                </div>
+
+                <div class="campo" style="margin-bottom: 10px;">
+                    <label>WhatsApp para Pedidos (com DDI e DDD):</label>
+                    <input type="text" id="input-whatsapp" placeholder="Ex: 5551999999999">
+                </div>
+                <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
             </div>
 
             <!-- ABAS DE NAVEGAÇÃO -->
@@ -328,46 +337,38 @@
 
     <!-- LÓGICA DE INSTALAÇÃO (PWA) -->
     <script>
-        // Registo do Service Worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('../sw.js')
-                .then(reg => console.log('Service Worker registado!', reg))
-                .catch(err => console.error('Erro no Service Worker:', err));
+                navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker Admin registado!', reg))
+                .catch(err => console.error('Erro no Service Worker Admin:', err));
             });
         }
 
-        // Mostrar o botão discreto apenas quando o navegador permitir a instalação
         let deferredPrompt;
         const btnInstalar = document.getElementById('btn-instalar');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); // Impede o prompt automático
-            deferredPrompt = e; // Guarda o evento
-            btnInstalar.style.display = 'block'; // Mostra o ícone 📥
+            e.preventDefault();
+            deferredPrompt = e;
+            btnInstalar.style.display = 'block';
         });
 
         btnInstalar.addEventListener('click', async () => {
             if (deferredPrompt) {
-                deferredPrompt.prompt(); // Mostra o prompt nativo de instalação
+                deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    console.log('Utilizador aceitou a instalação');
-                } else {
-                    console.log('Utilizador recusou a instalação');
-                }
                 deferredPrompt = null;
-                btnInstalar.style.display = 'none'; // Esconde o ícone após a ação
+                btnInstalar.style.display = 'none';
             }
         });
 
-        // Esconder se já estiver instalada
         window.addEventListener('appinstalled', () => {
             btnInstalar.style.display = 'none';
         });
     </script>
 
-    <!-- SCRIPT DO PAINEL ADMIN COM AUTENTICAÇÃO DO FIREBASE -->
+    <!-- SCRIPT DO PAINEL ADMIN -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, addDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
@@ -393,6 +394,8 @@
         const inputSenha = document.getElementById("senha");
         const erroLogin = document.getElementById("erro-login");
         const btnToggleLoja = document.getElementById("btn-toggle-loja");
+        const inputWhatsapp = document.getElementById("input-whatsapp");
+        const btnSalvarWhatsapp = document.getElementById("btn-salvar-whatsapp");
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
@@ -478,9 +481,13 @@
         async function iniciarOuvintesAdmin() {
             onSnapshot(docRefConfig, async (docSnap) => {
                 if (docSnap.exists()) {
-                    atualizarBotaoLoja(docSnap.data().aberto);
+                    const dados = docSnap.data();
+                    atualizarBotaoLoja(dados.aberto);
+                    if (dados.whatsapp) {
+                        inputWhatsapp.value = dados.whatsapp;
+                    }
                 } else {
-                    await setDoc(docRefConfig, { aberto: true });
+                    await setDoc(docRefConfig, { aberto: true, whatsapp: "" });
                     atualizarBotaoLoja(true);
                 }
             });
@@ -509,6 +516,12 @@
             const novoEstado = !estadoAtual;
             await updateDoc(docRefConfig, { aberto: novoEstado });
             mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
+        });
+
+        btnSalvarWhatsapp.addEventListener("click", async () => {
+            const numeroWhatsapp = inputWhatsapp.value.trim();
+            await updateDoc(docRefConfig, { whatsapp: numeroWhatsapp });
+            mostrarAviso("Número do WhatsApp atualizado com sucesso!");
         });
 
         const btnSalvarProduto = document.getElementById("btn-salvar-produto");
