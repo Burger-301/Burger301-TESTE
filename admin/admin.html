@@ -132,7 +132,7 @@
         .secao-painel h3 { color: #f28c28; margin-top: 0; font-size: 16px; border-bottom: 1px solid #333; padding-bottom: 8px; }
         
         .lista-admin-produtos {
-            max-height: 280px;
+            max-height: 320px;
             overflow-y: auto;
             margin-top: 10px;
         }
@@ -151,7 +151,8 @@
         }
         .item-botoes {
             display: flex;
-            gap: 5px;
+            gap: 4px;
+            flex-wrap: wrap;
         }
         .msg { text-align: center; margin-top: 10px; font-size: 14px; color: #4ade80; }
 
@@ -461,11 +462,11 @@
         async function verificarEPopularDados(snapshotProd, snapshotAdic) {
             if (snapshotProd.empty) {
                 const produtosIniciais = [
-                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "../imagens/poema-kids.jpg", esgotado: false },
-                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false }
+                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "../imagens/poema-kids.jpg", esgotado: false, ordem: 0 },
+                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false, ordem: 1 }
                 ];
-                for (const prod of produtosIniciais) {
-                    await addDoc(collection(db, "produtos"), prod);
+                for (let i = 0; i < produtosIniciais.length; i++) {
+                    await addDoc(collection(db, "produtos"), produtosIniciais[i]);
                 }
             }
 
@@ -557,7 +558,9 @@
                 mostrarAviso("Produto atualizado com sucesso!");
                 limparFormularioProduto();
             } else {
-                await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false });
+                const snapTotal = await getDocs(collection(db, "produtos"));
+                const novaOrdem = snapTotal.size;
+                await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false, ordem: novaOrdem });
                 mostrarAviso("Produto adicionado com sucesso!");
                 limparFormularioProduto();
             }
@@ -576,6 +579,12 @@
             btnCancelarEdicao.style.display = "none";
         }
 
+        async function reordenarProdutos(produtosArray) {
+            for (let i = 0; i < produtosArray.length; i++) {
+                await updateDoc(doc(db, "produtos", produtosArray[i].id), { ordem: i });
+            }
+        }
+
         function renderizarListaProdutos(snapshot) {
             const listaDiv = document.getElementById("lista-gestao-produtos");
             listaDiv.innerHTML = "";
@@ -585,10 +594,16 @@
                 return;
             }
 
+            let produtosArray = [];
             snapshot.forEach((docSnap) => {
-                const p = docSnap.data();
-                const id = docSnap.id;
+                produtosArray.push({ id: docSnap.id, ...docSnap.data() });
+            });
 
+            // Ordena pelo campo 'ordem' (ou 0 por defeito)
+            produtosArray.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+            produtosArray.forEach((p, index) => {
+                const id = p.id;
                 const item = document.createElement("div");
                 item.className = "item-admin-produto";
                 item.innerHTML = `
@@ -596,6 +611,8 @@
                         <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
                     </div>
                     <div class="item-botoes">
+                        <button type="button" style="background: #444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="subir-prod" data-id="${id}" ${index === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>⬆️</button>
+                        <button type="button" style="background: #444; padding: 6px 8px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="descer-prod" data-id="${id}" ${index === produtosArray.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed;"' : ''}>⬇️</button>
                         <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 6px 8px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
                             ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
                         </button>
@@ -610,6 +627,7 @@
                 btn.addEventListener("click", async (e) => {
                     const acao = e.target.dataset.acao;
                     const id = e.target.dataset.id;
+                    const index = produtosArray.findIndex(p => p.id === id);
 
                     if (acao === "toggle-prod") {
                         const esgotadoAtual = e.target.dataset.esgotado === "true";
@@ -619,6 +637,18 @@
                             await deleteDoc(doc(db, "produtos", id));
                             mostrarAviso("Produto excluído!");
                         }
+                    } else if (acao === "subir-prod" && index > 0) {
+                        const temp = produtosArray[index];
+                        produtosArray[index] = produtosArray[index - 1];
+                        produtosArray[index - 1] = temp;
+                        await reordenarProdutos(produtosArray);
+                        mostrarAviso("Ordem alterada com sucesso!");
+                    } else if (acao === "descer-prod" && index < produtosArray.length - 1) {
+                        const temp = produtosArray[index];
+                        produtosArray[index] = produtosArray[index + 1];
+                        produtosArray[index + 1] = temp;
+                        await reordenarProdutos(produtosArray);
+                        mostrarAviso("Ordem alterada com sucesso!");
                     } else if (acao === "editar-prod") {
                         editIdInput.value = id;
                         document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
@@ -627,7 +657,7 @@
                         document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
                         document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
 
-                        tituloFormProduto.textContent = "✏️ Editar Produto";
+                        tituloFormProduto.textContent = "✏️️ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
                         window.scrollTo({ top: 0, behavior: "smooth" });
