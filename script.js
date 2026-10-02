@@ -17,7 +17,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+// Recupera o carrinho salvo no navegador para não perder ao atualizar a página
 let carrinho = [];
+try {
+    const carrinhoSalvo = localStorage.getItem("carrinho_burger301");
+    if (carrinhoSalvo) {
+        carrinho = JSON.parse(carrinhoSalvo);
+    }
+} catch (e) {
+    console.error("Erro ao carregar carrinho do localStorage:", e);
+}
+
 let produtoAtual = null;
 let quantidadeAtual = 1;
 let statusLojaAdmin = true; 
@@ -409,6 +419,13 @@ adicionarCarrinhoModal.addEventListener("click", () => {
 });
 
 function atualizarCarrinho() {
+    // Salva o carrinho no localStorage do navegador sempre que houver alteração
+    try {
+        localStorage.setItem("carrinho_burger301", JSON.stringify(carrinho));
+    } catch (e) {
+        console.error("Erro ao salvar carrinho no localStorage:", e);
+    }
+
     itensCarrinho.innerHTML = "";
     if (carrinho.length === 0) {
         itensCarrinho.innerHTML = `<p class="carrinho-vazio">Seu carrinho está vazio.</p>`;
@@ -535,4 +552,15 @@ formularioPedido.onsubmit = (e) => {
 
     const urlWhatsApp = `https://wa.me/${numeroWhatsAppAdmin}?text=${encodeURIComponent(msg)}`;
     window.open(urlWhatsApp, "_blank");
+
+    // Limpa o carrinho e o localStorage após finalizar com sucesso
+    carrinho = [];
+    localStorage.removeItem("carrinho_burger301");
+    atualizarCarrinho();
+    formularioPedido.reset();
+    document.getElementById("campo-troco").style.display = "none";
+    dadosPedido.classList.remove("visivel");
 };
+
+// Renderiza o carrinho inicial ao carregar a página caso já existam itens salvos
+atualizarCarrinho();
