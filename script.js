@@ -31,7 +31,8 @@ const produtosPadraoSeguro = [
         preco: 25.00,
         descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.<br>        “É a vez dos pequenos.”",
         imagem: "imagens/poema-kids.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 0
     },
     {
         nome: "Smash 301",
@@ -39,7 +40,8 @@ const produtosPadraoSeguro = [
         preco: 29.00,
         descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.<br>        “Para aquela fominha.”",
         imagem: "imagens/smash-301.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 1
     },
     {
         nome: "Clássico da Casa",
@@ -47,7 +49,8 @@ const produtosPadraoSeguro = [
         preco: 32.00,
         descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo mussarela, alface, tomate e maionese da casa.<br>        “Clássico que não sai de moda.”",
         imagem: "imagens/classico-da-casa.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 2
     },
     {
         nome: "Du'Chef",
@@ -55,7 +58,8 @@ const produtosPadraoSeguro = [
         preco: 35.00,
         descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, cebola caramelizada, bacon e maionese da casa.<br>        “O favorito.”",
         imagem: "imagens/duchef.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 3
     },
     {
         nome: "Poema Tropical",
@@ -63,7 +67,8 @@ const produtosPadraoSeguro = [
         preco: 37.00,
         descricao: "Pão brioche selado na manteiga, blend bovino de 150g, queijo cheddar, bacon, rodela de abacaxi grelhado e maionese da casa.<br>        “Uma experiência gastronômica.”",
         imagem: "imagens/poema-tropical.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 4
     },
     {
         nome: "Porção de Fritas",
@@ -71,7 +76,8 @@ const produtosPadraoSeguro = [
         preco: 10.00,
         descricao: "Porção de batata frita (na air fryer) e um potinho de maionese da casa.<br>        “O que estava faltando.”",
         imagem: "imagens/fritas.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 5
     },
     {
         nome: "Porção de Onion Rings",
@@ -79,7 +85,8 @@ const produtosPadraoSeguro = [
         preco: 10.00,
         descricao: "Porção de anéis de cebola fritos (na air fryer) e um potinho de maionese da casa.<br>        “Vai ficar de fora?”",
         imagem: "imagens/onion-rings.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 6
     },
     {
         nome: "Fritas Feliz",
@@ -87,7 +94,8 @@ const produtosPadraoSeguro = [
         preco: 10.00,
         descricao: "Porção de batata frita carinha (na air fryer) e um potinho de maionese da casa.<br>        “Os pequenos adoram.”",
         imagem: "imagens/fritas-feliz.jpg",
-        esgotado: false
+        esgotado: false,
+        ordem: 7
     }
 ];
 
@@ -116,7 +124,7 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     }
 });
 
-// Ouve os produtos do Firebase em tempo real
+// Ouve os produtos do Firebase em tempo real (ordenados pela propriedade 'ordem')
 try {
     onSnapshot(collection(db, "produtos"), (snapshot) => {
         if (snapshot.empty) {
@@ -126,6 +134,8 @@ try {
             snapshot.forEach((docSnap) => {
                 listaDinamica.push(docSnap.data());
             });
+            // Ordena os produtos com base no campo ordem configurado no painel admin
+            listaDinamica.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
             renderizarCardapio(listaDinamica);
         }
     }, () => {
