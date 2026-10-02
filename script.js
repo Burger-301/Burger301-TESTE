@@ -97,8 +97,21 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
         const dados = docSnap.data();
         statusLojaAdmin = dados.aberto;
         atualizarStatusHeader();
+        
         if (dados.whatsapp) {
             numeroWhatsAppAdmin = dados.whatsapp;
+
+            // Atualiza dinamicamente o link do botão de dúvidas no cabeçalho
+            const botaoWhatsHeader = document.querySelector(".botao-whats-header");
+            if (botaoWhatsHeader) {
+                botaoWhatsHeader.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
+            }
+
+            // Atualiza dinamicamente o link do botão de dúvidas no rodapé
+            const botaoDuvidasRodape = document.querySelector(".botao-duvidas-whatsapp");
+            if (botaoDuvidasRodape) {
+                botaoDuvidasRodape.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
+            }
         }
     }
 });
