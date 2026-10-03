@@ -592,15 +592,22 @@ function configurarBotoesCarrinho() {
 
 if (abrirCarrinho) abrirCarrinho.onclick = () => painelCarrinho.classList.add("aberto");
 
-// Configura TODOS os botões de "Continuar Comprando" (tanto no carrinho quanto na tela de entrega)
-document.querySelectorAll("#continuar-comprando").forEach(botao => {
-    botao.onclick = () => {
-        painelCarrinho.classList.remove("aberto");
-        dadosPedido.classList.remove("visivel");
-        if (carrinho.length > 0) {
-            carrinhoFlutuante.classList.add("visivel");
-        }
-    };
+// Configuração robusta para abranger ID, classe ou botões com o texto "continuar comprando"
+document.querySelectorAll("#continuar-comprando, .continuar-comprando, button").forEach(botao => {
+    if (
+        botao.id === "continuar-comprando" || 
+        botao.classList.contains("continuar-comprando") || 
+        botao.textContent.toLowerCase().includes("continuar comprando")
+    ) {
+        botao.onclick = (e) => {
+            e.preventDefault();
+            if (painelCarrinho) painelCarrinho.classList.remove("aberto");
+            if (dadosPedido) dadosPedido.classList.remove("visivel");
+            if (carrinho && carrinho.length > 0 && carrinhoFlutuante) {
+                carrinhoFlutuante.classList.add("visivel");
+            }
+        };
+    }
 });
 
 if (finalizarPedido) {
