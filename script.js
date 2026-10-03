@@ -324,7 +324,7 @@ function pedidosEstaoAbertos() {
 }
 
 function mostrarAvisoForaDoExpediente() {
-    mostrarMensagem("🍔 A loja está fechada no momento pelo painel administrativo. Burger 301 agradece a compreensão! ❤️");
+    mostrarMensagem("🍔 Pedidos fechados no momento! Nosso atendimento funciona às sextas e sábados, das 19h30 às 22h. Burger 301 agradece pela compreensão! ❤️");
 }
 
 function atualizarStatusHeader() {
