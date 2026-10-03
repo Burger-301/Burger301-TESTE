@@ -222,7 +222,7 @@ try {
     console.error("Erro ao carregar adicionais:", e);
 }
 
-// Renderiza o Banner de Promoção do Dia no topo do cardápio se estiver ativa
+// Renderiza o Banner de Promoção do Dia otimizado para Mobile (Imagem maior na lateral)
 function renderizarBannerPromocao() {
     let bannerContainer = document.getElementById("banner-promocao-container");
     const hamburgueresContainer = document.getElementById("lista-hamburgueres");
@@ -250,26 +250,26 @@ function renderizarBannerPromocao() {
 
     bannerContainer.style.display = "block";
     bannerContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #f28c28, #d96f0c); padding: 2px; border-radius: 10px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(242,140,40,0.3);">
-            <div style="background: #1e1e1e; padding: 15px; border-radius: 9px; display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
-                <div style="flex: 0 0 100px; height: 100px; border-radius: 6px; overflow: hidden; position: relative;">
-                    <img src="${produtoPromo.imagem}" alt="${produtoPromo.nome}" style="width: 100%; height: 100%; object-fit: cover;">
-                    <span style="position: absolute; top: 5px; left: 5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">PROMO</span>
-                </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <span style="color: #f28c28; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🔥 Promoção do Dia</span>
-                    <h3 style="margin: 5px 0; color: #fff; font-size: 18px;">${produtoPromo.nome}</h3>
-                    <p style="margin: 0 0 8px 0; color: #ccc; font-size: 13px;">${promoConfig.descricao || produtoPromo.descricao}</p>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <span style="text-decoration: line-through; color: #777; font-size: 14px;">R$ ${Number(produtoPromo.preco).toFixed(2).replace('.', ',')}</span>
-                        <span style="color: #4ade80; font-size: 18px; font-weight: bold;">R$ ${Number(promoConfig.preco).toFixed(2).replace('.', ',')}</span>
+        <div style="background: linear-gradient(135deg, #f28c28, #d96f0c); padding: 2px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(242,140,40,0.3);">
+            <div style="background: #1e1e1e; padding: 15px; border-radius: 10px;">
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div style="flex: 0 0 120px; height: 120px; border-radius: 8px; overflow: hidden; position: relative;">
+                        <img src="${produtoPromo.imagem}" alt="${produtoPromo.nome}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <span style="position: absolute; top: 5px; left: 5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">PROMO</span>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <span style="color: #f28c28; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🔥 Promoção do Dia</span>
+                        <h3 style="margin: 4px 0; color: #fff; font-size: 17px; line-height: 1.2;">${produtoPromo.nome}</h3>
+                        <p style="margin: 0 0 8px 0; color: #ccc; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${promoConfig.descricao || produtoPromo.descricao}</p>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="text-decoration: line-through; color: #777; font-size: 13px;">R$ ${Number(produtoPromo.preco).toFixed(2).replace('.', ',')}</span>
+                            <span style="color: #4ade80; font-size: 16px; font-weight: bold;">R$ ${Number(promoConfig.preco).toFixed(2).replace('.', ',')}</span>
+                        </div>
                     </div>
                 </div>
-                <div style="width: 100%; text-align: right;">
-                    <button type="button" class="botao-adicionar" data-produto="${produtoPromo.nome}" data-preco="${promoConfig.preco}" style="background-color: #22c55e; width: auto; padding: 10px 20px; font-size: 14px;">
-                        Aproveitar Promoção
-                    </button>
-                </div>
+                <button type="button" class="botao-adicionar" data-produto="${produtoPromo.nome}" data-preco="${promoConfig.preco}" style="background-color: #22c55e; width: 100%; padding: 11px; font-size: 14px; margin-top: 12px; border-radius: 6px; border: none; color: #fff; font-weight: bold; cursor: pointer;">
+                    Aproveitar Promoção
+                </button>
             </div>
         </div>
     `;
@@ -367,7 +367,6 @@ const resumoCarrinho = document.getElementById("resumo-carrinho");
 const formularioPedido = document.getElementById("formulario-pedido");
 const painelCarrinho = document.getElementById("carrinho");
 const dadosPedido = document.getElementById("dados-pedido");
-const botaoVoltarDados = document.getElementById("voltar-cardapio-dados");
 
 function formatarMoeda(valor) {
     return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -510,6 +509,8 @@ function atualizarCarrinho() {
         console.error("Erro ao salvar carrinho no localStorage:", e);
     }
 
+    if (!itensCarrinho) return;
+
     itensCarrinho.innerHTML = "";
     if (carrinho.length === 0) {
         itensCarrinho.innerHTML = `<p class="carrinho-vazio">Seu carrinho está vazio.</p>`;
@@ -577,72 +578,71 @@ function configurarBotoesCarrinho() {
     });
 }
 
-abrirCarrinho.onclick = () => painelCarrinho.classList.add("aberto");
-continuarComprando.onclick = () => painelCarrinho.classList.remove("aberto");
+if (abrirCarrinho) abrirCarrinho.onclick = () => painelCarrinho.classList.add("aberto");
+if (continuarComprando) continuarComprando.onclick = () => painelCarrinho.classList.remove("aberto");
 
-finalizarPedido.onclick = () => {
-    if (carrinho.length === 0 || !pedidosEstaoAbertos()) return;
-    painelCarrinho.classList.remove("aberto");
-    carrinhoFlutuante.classList.remove("visivel");
-    dadosPedido.classList.add("visivel");
-    setTimeout(() => dadosPedido.scrollIntoView({ behavior: "smooth" }), 100);
-};
-
-if (botaoVoltarDados) {
-    botaoVoltarDados.onclick = () => {
-        dadosPedido.classList.remove("visivel");
-        if (carrinho.length > 0) carrinhoFlutuante.classList.add("visivel");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+if (finalizarPedido) {
+    finalizarPedido.onclick = () => {
+        if (carrinho.length === 0 || !pedidosEstaoAbertos()) return;
+        painelCarrinho.classList.remove("aberto");
+        carrinhoFlutuante.classList.remove("visivel");
+        dadosPedido.classList.add("visivel");
+        setTimeout(() => dadosPedido.scrollIntoView({ behavior: "smooth" }), 100);
     };
 }
 
 document.querySelectorAll('input[name="pagamento"]').forEach(r => {
     r.onchange = () => {
-        document.getElementById("campo-troco").style.display = (r.value === "Dinheiro" && r.checked) ? "block" : "none";
+        const campoTroco = document.getElementById("campo-troco");
+        if (campoTroco) campoTroco.style.display = (r.value === "Dinheiro" && r.checked) ? "block" : "none";
     };
 });
 
-formularioPedido.onsubmit = (e) => {
-    e.preventDefault();
-    if (!pedidosEstaoAbertos()) return;
+if (formularioPedido) {
+    formularioPedido.onsubmit = (e) => {
+        e.preventDefault();
+        if (!pedidosEstaoAbertos()) return;
 
-    const nome = document.getElementById("nome").value.trim();
-    const torre = document.getElementById("torre").value.trim();
-    const apartamento = document.getElementById("apartamento").value.trim();
-    const pagamento = document.querySelector('input[name="pagamento"]:checked')?.value;
-    const troco = document.getElementById("troco").value.trim();
-    const obs = document.getElementById("observacao").value.trim();
+        const nome = document.getElementById("nome").value.trim();
+        const torre = document.getElementById("torre").value.trim();
+        const apartamento = document.getElementById("apartamento").value.trim();
+        const pagamento = document.querySelector('input[name="pagamento"]:checked')?.value;
+        const troco = document.getElementById("troco")?.value.trim() || "";
+        const obs = document.getElementById("observacao")?.value.trim() || "";
 
-    if (!nome || !torre || !apartamento || !pagamento) {
-        mostrarMensagem("Preencha todos os campos obrigatórios (*).");
-        return;
-    }
+        if (!nome || !torre || !apartamento || !pagamento) {
+            mostrarMensagem("Preencha todos os campos obrigatórios (*).");
+            return;
+        }
 
-    let msg = `🍔 *NOVO PEDIDO - BURGER 301*\n\n👤 *Cliente:* ${nome}\n🏢 *Endereço:* Torre ${torre}, Apto ${apartamento}\n💳 *Pagamento:* ${pagamento}\n`;
-    if (pagamento === "Dinheiro" && troco) msg += `💵 *Troco para:* ${troco}\n`;
-    if (obs) msg += `📝 *Obs:* ${obs}\n`;
-    msg += `\n🛒 *ITENS:*\n`;
+        let msg = `🍔 *NOVO PEDIDO - BURGER 301*\n\n👤 *Cliente:* ${nome}\n🏢 *Endereço:* Torre ${torre}, Apto ${apartamento}\n💳 *Pagamento:* ${pagamento}\n`;
+        if (pagamento === "Dinheiro" && troco) msg += `💵 *Troco para:* ${troco}\n`;
+        if (obs) msg += `📝 *Obs:* ${obs}\n`;
+        msg += `\n🛒 *ITENS:*\n`;
 
-    let total = 0;
-    carrinho.forEach((item, i) => {
-        const sub = item.valorUnitario * item.quantidade;
-        total += sub;
-        msg += `\n${i + 1}. ${item.quantidade}x ${item.nome} — ${formatarMoeda(sub)}\n`;
-        item.adicionais.forEach(a => msg += `    + ${a.nome}\n`);
-        if (item.observacao) msg += `    📝 ${item.observacao}\n`;
-    });
+        let total = 0;
+        carrinho.forEach((item, i) => {
+            const sub = item.valorUnitario * item.quantidade;
+            total += sub;
+            msg += `\n${i + 1}. ${item.quantidade}x ${item.nome} — ${formatarMoeda(sub)}\n`;
+            item.adicionais.forEach(a => msg += `    + ${a.nome}\n`);
+            if (item.observacao) msg += `    📝 ${item.observacao}\n`;
+        });
 
-    msg += `\n💰 *TOTAL DO PEDIDO:* ${formatarMoeda(total)}`;
+        msg += `\n💰 *TOTAL DO PEDIDO:* ${formatarMoeda(total)}`;
 
-    const urlWhatsApp = `https://wa.me/${numeroWhatsAppAdmin}?text=${encodeURIComponent(msg)}`;
-    window.open(urlWhatsApp, "_blank");
+        const urlWhatsApp = `https://wa.me/${numeroWhatsAppAdmin}?text=${encodeURIComponent(msg)}`;
+        window.open(urlWhatsApp, "_blank");
 
-    carrinho = [];
-    localStorage.removeItem("carrinho_burger301");
-    atualizarCarrinho();
-    formularioPedido.reset();
-    document.getElementById("campo-troco").style.display = "none";
-    dadosPedido.classList.remove("visivel");
-};
+        carrinho = [];
+        localStorage.removeItem("carrinho_burger301");
+        atualizarCarrinho();
+        formularioPedido.reset();
+        const campoTroco = document.getElementById("campo-troco");
+        if (campoTroco) campoTroco.style.display = "none";
+        dadosPedido.classList.remove("visivel");
+    };
+}
 
+reativarEventosBotoes();
 atualizarCarrinho();
