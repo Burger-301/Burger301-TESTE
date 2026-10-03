@@ -31,7 +31,7 @@ try {
 let produtoAtual = null;
 let quantidadeAtual = 1;
 let modoLojaAdmin = "automatico"; 
-let numeroWhatsAppAdmin = "5551981061618"; // Número de fallback padrão caso não carregue do Firebase
+let numeroWhatsAppAdmin = "555196598552"; // Número de fallback padrão atualizado
 
 // Configurações de Múltiplas Promoções
 let listaPromocoesAtivas = [];
@@ -142,16 +142,16 @@ onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
         
         if (dados.whatsapp) {
             numeroWhatsAppAdmin = dados.whatsapp;
+        }
 
-            const botaoWhatsHeader = document.querySelector(".botao-whats-header");
-            if (botaoWhatsHeader) {
-                botaoWhatsHeader.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
-            }
+        const botaoWhatsHeader = document.querySelector(".botao-whats-header");
+        if (botaoWhatsHeader) {
+            botaoWhatsHeader.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
+        }
 
-            const botaoDuvidasRodape = document.querySelector(".botao-duvidas-whatsapp");
-            if (botaoDuvidasRodape) {
-                botaoDuvidasRodape.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
-            }
+        const botaoDuvidasRodape = document.querySelector(".botao-duvidas-whatsapp");
+        if (botaoDuvidasRodape) {
+            botaoDuvidasRodape.href = `https://wa.me/${numeroWhatsAppAdmin}?text=Olá!%20Tenho%20uma%20dúvida%20sobre%20o%20cardápio.`;
         }
     }
 });
