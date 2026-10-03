@@ -260,10 +260,8 @@
             <div class="secao-painel">
                 <h3>🔥 Gerenciar Promoções Ativas</h3>
                 
-                <!-- Botão para alternar a exibição do formulário de promoção -->
                 <button id="btn-toggle-form-promo" type="button" style="background-color: #3b82f6; margin-bottom: 15px;">➕ Adicionar Nova Promoção</button>
 
-                <!-- Formulário oculto por padrão -->
                 <div id="container-form-promo" style="display: none; background: #222; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px;">
                     <div class="campo">
                         <label>Selecionar Produto:</label>
@@ -299,40 +297,45 @@
             <!-- SEÇÃO DE PRODUTOS -->
             <div id="conteudo-produtos">
                 <div class="secao-painel">
-                    <h3 id="titulo-form-produto">➕ Adicionar Novo Produto</h3>
-                    <input type="hidden" id="edit-id" value="">
-                    <div class="campo">
-                        <label>Nome do Produto:</label>
-                        <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
-                    </div>
-                    <div class="campo">
-                        <label>Categoria:</label>
-                        <select id="novo-categoria">
-                            <option value="hamburgueres">Hambúrgueres</option>
-                            <option value="porcoes">Porções</option>
-                        </select>
-                    </div>
-                    <div class="campo">
-                        <label>Preço (R$):</label>
-                        <input type="text" id="novo-preco" placeholder="Ex: 35.00">
-                    </div>
-                    <div class="campo">
-                        <label>Descrição:</label>
-                        <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
-                    </div>
-                    <div class="campo">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <label style="margin-bottom: 0;">Imagem PNG (Caminho):</label>
-                            <button type="button" id="btn-ajuda-img" style="width: 24px; height: 24px; padding: 0; font-size: 12px; background: #3b82f6; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</button>
-                        </div>
-                        <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="../imagens/">
-                    </div>
-                    <button id="btn-salvar-produto" type="button">Cadastrar Produto</button>
-                    <button id="btn-cancelar-edicao" type="button" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
-                </div>
-
-                <div class="secao-painel">
                     <h3>📦 Gerenciar Produtos</h3>
+                    
+                    <!-- Botão para alternar a exibição do formulário de produto -->
+                    <button id="btn-toggle-form-produto" type="button" style="background-color: #3b82f6; margin-bottom: 15px;">➕ Adicionar Novo Produto</button>
+
+                    <!-- Formulário de produto oculto por padrão -->
+                    <div id="container-form-produto" style="display: none; background: #222; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px;">
+                        <h3 id="titulo-form-produto" style="margin-top: 0; color: #f28c28; border-bottom: 1px solid #333; padding-bottom: 8px; font-size: 16px;">➕ Adicionar Novo Produto</h3>
+                        <input type="hidden" id="edit-id" value="">
+                        <div class="campo">
+                            <label>Nome do Produto:</label>
+                            <input type="text" id="novo-nome" placeholder="Ex: Burger Especial">
+                        </div>
+                        <div class="campo">
+                            <label>Categoria:</label>
+                            <select id="novo-categoria">
+                                <option value="hamburgueres">Hambúrgueres</option>
+                                <option value="porcoes">Porções</option>
+                            </select>
+                        </div>
+                        <div class="campo">
+                            <label>Preço (R$):</label>
+                            <input type="text" id="novo-preco" placeholder="Ex: 35.00">
+                        </div>
+                        <div class="campo">
+                            <label>Descrição:</label>
+                            <textarea id="novo-descricao" rows="2" placeholder="Ingredientes..."></textarea>
+                        </div>
+                        <div class="campo">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                                <label style="margin-bottom: 0;">Imagem PNG (Caminho):</label>
+                                <button type="button" id="btn-ajuda-img" style="width: 24px; height: 24px; padding: 0; font-size: 12px; background: #3b82f6; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">?</button>
+                            </div>
+                            <input type="text" id="novo-imagem" placeholder="Ex: imagens/nome-foto.png" value="../imagens/">
+                        </div>
+                        <button id="btn-salvar-produto" type="button">Cadastrar Produto</button>
+                        <button id="btn-cancelar-edicao" type="button" style="background: #555; margin-top: 8px; display: none;">Cancelar Edição</button>
+                    </div>
+
                     <div id="lista-gestao-produtos" class="lista-admin-produtos">
                         <p style="font-size: 13px; color: #777;">A carregar produtos...</p>
                     </div>
@@ -463,6 +466,10 @@
         const btnAdicionarPromocao = document.getElementById("btn-adicionar-promocao");
         const listaAdminPromocoes = document.getElementById("lista-admin-promocoes");
 
+        // Elementos de Produtos e Toggle do Formulário
+        const btnToggleFormProduto = document.getElementById("btn-toggle-form-produto");
+        const containerFormProduto = document.getElementById("container-form-produto");
+
         let promocoesAtuaisCache = [];
         let produtosCacheAdmin = [];
 
@@ -483,6 +490,15 @@
             containerFormPromo.style.display = estaOculto ? "block" : "none";
             btnToggleFormPromo.textContent = estaOculto ? "✖ Fechar Formulário" : "➕ Adicionar Nova Promoção";
             btnToggleFormPromo.style.backgroundColor = estaOculto ? "#ef4444" : "#3b82f6";
+        });
+
+        // Evento para abrir/fechar o formulário de cadastro de produtos
+        btnToggleFormProduto.addEventListener("click", () => {
+            const estaOculto = containerFormProduto.style.display === "none";
+            containerFormProduto.style.display = estaOculto ? "block" : "none";
+            btnToggleFormProduto.textContent = estaOculto ? "✖ Fechar Formulário" : "➕ Adicionar Novo Produto";
+            btnToggleFormProduto.style.backgroundColor = estaOculto ? "#ef4444" : "#3b82f6";
+            if (estaOculto) limparFormularioProduto();
         });
 
         const tabProdutos = document.getElementById("tab-produtos");
@@ -618,7 +634,6 @@
             inputPromoTexto.value = "";
             selectPromoProduto.value = "";
 
-            // Oculta o formulário novamente após salvar
             containerFormPromo.style.display = "none";
             btnToggleFormPromo.textContent = "➕ Adicionar Nova Promoção";
             btnToggleFormPromo.style.backgroundColor = "#3b82f6";
@@ -713,6 +728,11 @@
             tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
             btnSalvarProduto.textContent = "Cadastrar Produto";
             btnCancelarEdicao.style.display = "none";
+            
+            // Oculta o formulário ao finalizar ou cancelar a edição
+            containerFormProduto.style.display = "none";
+            btnToggleFormProduto.textContent = "➕ Adicionar Novo Produto";
+            btnToggleFormProduto.style.backgroundColor = "#3b82f6";
         }
 
         async function reordenarProdutos(produtosArray) {
@@ -793,6 +813,12 @@
                         tituloFormProduto.textContent = "✏ Editar Produto";
                         btnSalvarProduto.textContent = "Salvar Alterações";
                         btnCancelarEdicao.style.display = "block";
+                        
+                        // Abre o formulário automaticamente ao clicar em editar
+                        containerFormProduto.style.display = "block";
+                        btnToggleFormProduto.textContent = "✖ Fechar Formulário";
+                        btnToggleFormProduto.style.backgroundColor = "#ef4444";
+
                         window.scrollTo({ top: 0, behavior: "smooth" });
                     }
                 });
