@@ -30,16 +30,11 @@ try {
 
 let produtoAtual = null;
 let quantidadeAtual = 1;
-let statusLojaAdmin = true; 
+let modoLojaAdmin = "automatico"; 
 let numeroWhatsAppAdmin = "5551981061618"; // Número de fallback padrão caso não carregue do Firebase
 
-// Configurações da Promoção do Dia
-let promoConfig = {
-    ativa: false,
-    produtoId: "",
-    preco: 0,
-    descricao: ""
-};
+// Configurações de Múltiplas Promoções
+let listaPromocoesAtivas = [];
 
 let listaProdutosCache = [];
 
@@ -127,21 +122,23 @@ const produtosPadraoSeguro = [
     }
 ];
 
-// Ouve o status, WhatsApp e Promoção da loja em tempo real
+// Ouve o status, WhatsApp e Promoções da loja em tempo real
 onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
     if (docSnap.exists()) {
         const dados = docSnap.data();
-        statusLojaAdmin = dados.aberto;
+        
+        if (dados.modoLoja) {
+            modoLojaAdmin = dados.modoLoja;
+        } else if (dados.aberto !== undefined) {
+            modoLojaAdmin = dados.aberto ? "aberto" : "fechado";
+        } else {
+            modoLojaAdmin = "automatico";
+        }
+
         atualizarStatusHeader();
         
-        promoConfig = {
-            ativa: dados.promocaoAtiva || false,
-            produtoId: dados.promocaoProdutoId || "",
-            preco: Number(dados.promocaoPreco) || 0,
-            descricao: dados.promocaoDescricao || ""
-        };
-
-        renderizarBannerPromocao();
+        listaPromocoesAtivas = dados.promocoes || [];
+        renderizarBannersPromocoes();
         
         if (dados.whatsapp) {
             numeroWhatsAppAdmin = dados.whatsapp;
@@ -174,16 +171,16 @@ try {
             listaProdutosCache = listaDinamica;
             renderizarCardapio(listaDinamica);
         }
-        renderizarBannerPromocao();
+        renderizarBannersPromocoes();
     }, () => {
         listaProdutosCache = produtosPadraoSeguro;
         renderizarCardapio(produtosPadraoSeguro);
-        renderizarBannerPromocao();
+        renderizarBannersPromocoes();
     });
 } catch (e) {
     listaProdutosCache = produtosPadraoSeguro;
     renderizarCardapio(produtosPadraoSeguro);
-    renderizarBannerPromocao();
+    renderizarBannersPromocoes();
 }
 
 // Ouve os adicionais do Firebase em tempo real (Atualiza disponibilidade)
@@ -222,35 +219,35 @@ try {
     console.error("Erro ao carregar adicionais:", e);
 }
 
-// Renderiza o Banner de Promoção do Dia otimizado para Mobile (Imagem maior na lateral)
-function renderizarBannerPromocao() {
-    let bannerContainer = document.getElementById("banner-promocao-container");
+// Renderiza Múltiplos Banners de Promoção otimizados para Mobile (Imagem maior na lateral)
+function renderizarBannersPromocoes() {
+    let containerGeral = document.getElementById("banners-promocoes-container");
     const hamburgueresContainer = document.getElementById("lista-hamburgueres");
 
     if (!hamburgueresContainer) return;
 
-    if (!bannerContainer) {
-        bannerContainer = document.createElement("div");
-        bannerContainer.id = "banner-promocao-container";
-        hamburgueresContainer.parentNode.insertBefore(bannerContainer, hamburgueresContainer);
+    if (!containerGeral) {
+        containerGeral = document.createElement("div");
+        containerGeral.id = "banners-promocoes-container";
+        hamburgueresContainer.parentNode.insertBefore(containerGeral, hamburgueresContainer);
     }
 
-    if (!promoConfig.ativa || !promoConfig.produtoId) {
-        bannerContainer.innerHTML = "";
-        bannerContainer.style.display = "none";
+    if (!listaPromocoesAtivas || listaPromocoesAtivas.length === 0) {
+        containerGeral.innerHTML = "";
+        containerGeral.style.display = "none";
         return;
     }
 
-    const produtoPromo = listaProdutosCache.find(p => p.id === promoConfig.produtoId);
-    if (!produtoPromo) {
-        bannerContainer.innerHTML = "";
-        bannerContainer.style.display = "none";
-        return;
-    }
+    containerGeral.style.display = "block";
+    containerGeral.innerHTML = "";
 
-    bannerContainer.style.display = "block";
-    bannerContainer.innerHTML = `
-        <div style="background: linear-gradient(135deg, #f28c28, #d96f0c); padding: 2px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(242,140,40,0.3);">
+    listaPromocoesAtivas.forEach(promo => {
+        const produtoPromo = listaProdutosCache.find(p => p.id === promo.produtoId);
+        if (!produtoPromo) return;
+
+        const bannerDiv = document.createElement("div");
+        bannerDiv.style.cssText = "background: linear-gradient(135deg, #f28c28, #d96f0c); padding: 2px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(242,140,40,0.3);";
+        bannerDiv.innerHTML = `
             <div style="background: #1e1e1e; padding: 15px; border-radius: 10px;">
                 <div style="display: flex; gap: 15px; align-items: center;">
                     <div style="flex: 0 0 120px; height: 120px; border-radius: 8px; overflow: hidden; position: relative;">
@@ -258,21 +255,22 @@ function renderizarBannerPromocao() {
                         <span style="position: absolute; top: 5px; left: 5px; background: #ef4444; color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 4px;">PROMO</span>
                     </div>
                     <div style="flex: 1; min-width: 0;">
-                        <span style="color: #f28c28; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🔥 Promoção do Dia</span>
+                        <span style="color: #f28c28; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">🔥 Promoção Especial</span>
                         <h3 style="margin: 4px 0; color: #fff; font-size: 17px; line-height: 1.2;">${produtoPromo.nome}</h3>
-                        <p style="margin: 0 0 8px 0; color: #ccc; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${promoConfig.descricao || produtoPromo.descricao}</p>
+                        <p style="margin: 0 0 8px 0; color: #ccc; font-size: 12px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${promo.descricao || produtoPromo.descricao}</p>
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <span style="text-decoration: line-through; color: #777; font-size: 13px;">R$ ${Number(produtoPromo.preco).toFixed(2).replace('.', ',')}</span>
-                            <span style="color: #4ade80; font-size: 16px; font-weight: bold;">R$ ${Number(promoConfig.preco).toFixed(2).replace('.', ',')}</span>
+                            <span style="color: #4ade80; font-size: 16px; font-weight: bold;">R$ ${Number(promo.preco).toFixed(2).replace('.', ',')}</span>
                         </div>
                     </div>
                 </div>
-                <button type="button" class="botao-adicionar" data-produto="${produtoPromo.nome}" data-preco="${promoConfig.preco}" style="background-color: #22c55e; width: 100%; padding: 11px; font-size: 14px; margin-top: 12px; border-radius: 6px; border: none; color: #fff; font-weight: bold; cursor: pointer;">
+                <button type="button" class="botao-adicionar" data-produto="${produtoPromo.nome}" data-preco="${promo.preco}" style="background-color: #22c55e; width: 100%; padding: 11px; font-size: 14px; margin-top: 12px; border-radius: 6px; border: none; color: #fff; font-weight: bold; cursor: pointer;">
                     Aproveitar Promoção
                 </button>
             </div>
-        </div>
-    `;
+        `;
+        containerGeral.appendChild(bannerDiv);
+    });
 
     reativarEventosBotoes();
 }
@@ -320,7 +318,18 @@ function renderizarCardapio(produtos) {
 }
 
 function pedidosEstaoAbertos() {
-    return statusLojaAdmin;
+    if (modoLojaAdmin === "aberto") return true;
+    if (modoLojaAdmin === "fechado") return false;
+
+    const agora = new Date();
+    const dia = agora.getDay(); 
+    const hora = agora.getHours();
+    const minutos = agora.getMinutes();
+    const horarioAtual = hora * 60 + minutos;
+    const inicio = 19 * 60 + 30; // 19h30
+    const fim = 22 * 60;         // 22h00
+
+    return (dia === 5 || dia === 6) && (horarioAtual >= inicio && horarioAtual < fim);
 }
 
 function mostrarAvisoForaDoExpediente() {
