@@ -593,6 +593,10 @@ if (continuarComprando) continuarComprando.onclick = () => painelCarrinho.classL
 if (finalizarPedido) {
     finalizarPedido.onclick = () => {
         if (carrinho.length === 0 || !pedidosEstaoAbertos()) return;
+        
+        // Mensagem temporária de sugestão (upsell de porção)
+        mostrarMensagem("🍟 Dica: Vai esquecer da porção de Fritas ou Onion Rings? 😋");
+
         painelCarrinho.classList.remove("aberto");
         carrinhoFlutuante.classList.remove("visivel");
         dadosPedido.classList.add("visivel");
