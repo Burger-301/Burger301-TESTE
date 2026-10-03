@@ -369,7 +369,6 @@ const itensCarrinho = document.getElementById("itens-carrinho");
 const quantidadeCarrinho = document.getElementById("quantidade-carrinho");
 const valorTotal = document.getElementById("valor-total");
 const finalizarPedido = document.getElementById("finalizar-pedido");
-const continuarComprando = document.getElementById("continuar-comprando");
 const carrinhoFlutuante = document.getElementById("carrinho-flutuante");
 const abrirCarrinho = document.getElementById("abrir-carrinho");
 const resumoCarrinho = document.getElementById("resumo-carrinho");
@@ -593,16 +592,16 @@ function configurarBotoesCarrinho() {
 
 if (abrirCarrinho) abrirCarrinho.onclick = () => painelCarrinho.classList.add("aberto");
 
-// Ação do botão Continuar Comprando (fecha o carrinho ou esconde os dados de entrega para voltar ao cardápio)
-if (continuarComprando) {
-    continuarComprando.onclick = () => {
+// Configura TODOS os botões de "Continuar Comprando" (tanto no carrinho quanto na tela de entrega)
+document.querySelectorAll("#continuar-comprando").forEach(botao => {
+    botao.onclick = () => {
         painelCarrinho.classList.remove("aberto");
         dadosPedido.classList.remove("visivel");
         if (carrinho.length > 0) {
             carrinhoFlutuante.classList.add("visivel");
         }
     };
-}
+});
 
 if (finalizarPedido) {
     finalizarPedido.onclick = () => {
