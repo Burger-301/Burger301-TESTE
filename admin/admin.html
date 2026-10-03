@@ -83,25 +83,36 @@
         }
         button:hover { background-color: #d96f0c; }
         .painel-conteudo { display: none; }
+        
         .status-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             background: #2a2a2a;
             padding: 15px;
             border-radius: 8px;
             margin-bottom: 15px;
         }
-        .btn-status {
-            padding: 8px 16px;
+        .botoes-modo-loja {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .btn-modo {
+            flex: 1;
+            padding: 10px 6px;
             border-radius: 6px;
             font-weight: bold;
+            font-size: 12px;
             cursor: pointer;
-            border: none;
-            width: auto;
+            border: 1px solid #444;
+            background: #222;
+            color: #aaa;
+            text-align: center;
+            transition: all 0.2s;
         }
-        .ativo { background-color: #22c55e; color: white; }
-        .inativo { background-color: #ef4444; color: white; }
+        .btn-modo.ativo {
+            background-color: #f28c28;
+            color: white;
+            border-color: #f28c28;
+        }
         
         .abas-admin {
             display: flex;
@@ -229,8 +240,12 @@
                 <h3>⚙️ Configurações da Loja</h3>
                 
                 <div class="status-box">
-                    <span>Status da Loja:</span>
-                    <button id="btn-toggle-loja" class="btn-status ativo">Aberto</button>
+                    <label style="margin-bottom: 6px;">Modo de Funcionamento:</label>
+                    <div class="botoes-modo-loja">
+                        <button type="button" id="btn-modo-auto" class="btn-modo">⏰ Automático</button>
+                        <button type="button" id="btn-modo-aberto" class="btn-modo">🟢 Forçar Aberto</button>
+                        <button type="button" id="btn-modo-fechado" class="btn-modo">🔴 Forçar Fechado</button>
+                    </div>
                 </div>
 
                 <div class="campo" style="margin-bottom: 5px;">
@@ -241,30 +256,38 @@
                 <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
             </div>
 
-            <!-- PROMOÇÃO DO DIA -->
+            <!-- GERENCIADOR DE PROMOÇÕES MÚLTIPLAS COM BOTÃO DE OCULTAR -->
             <div class="secao-painel">
-                <h3>🔥 Promoção do Dia</h3>
+                <h3>🔥 Gerenciar Promoções Ativas</h3>
                 
-                <div class="status-box">
-                    <span>Status da Promoção:</span>
-                    <button id="btn-toggle-promocao" class="btn-status inativo">Inativa</button>
+                <!-- Botão para alternar a exibição do formulário de promoção -->
+                <button id="btn-toggle-form-promo" type="button" style="background-color: #3b82f6; margin-bottom: 15px;">➕ Adicionar Nova Promoção</button>
+
+                <!-- Formulário oculto por padrão -->
+                <div id="container-form-promo" style="display: none; background: #222; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-bottom: 15px;">
+                    <div class="campo">
+                        <label>Selecionar Produto:</label>
+                        <select id="select-promo-produto">
+                            <option value="">A carregar produtos...</option>
+                        </select>
+                    </div>
+                    <div class="campo">
+                        <label>Preço Promocional (R$):</label>
+                        <input type="text" id="input-promo-preco" placeholder="Ex: 25.00">
+                    </div>
+                    <div class="campo">
+                        <label>Texto em Destaque (Opcional):</label>
+                        <input type="text" id="input-promo-texto" placeholder="Ex: Só hoje com batata extra!">
+                    </div>
+                    <button id="btn-adicionar-promocao" type="button" style="background-color: #22c55e;">Salvar e Adicionar Promoção</button>
                 </div>
 
-                <div class="campo">
-                    <label>Selecionar Produto:</label>
-                    <select id="select-promo-produto">
-                        <option value="">A carregar produtos...</option>
-                    </select>
+                <div>
+                    <label style="margin-bottom: 8px;">Promoções Ativas na Loja:</label>
+                    <div id="lista-admin-promocoes" style="max-height: 220px; overflow-y: auto; background: #2a2a2a; padding: 10px; border-radius: 6px;">
+                        <p style="font-size: 13px; color: #777;">Nenhuma promoção adicionada.</p>
+                    </div>
                 </div>
-                <div class="campo">
-                    <label>Preço Promocional (R$):</label>
-                    <input type="text" id="input-promo-preco" placeholder="Ex: 25.00">
-                </div>
-                <div class="campo">
-                    <label>Texto em Destaque (Opcional):</label>
-                    <input type="text" id="input-promo-texto" placeholder="Ex: Só hoje com batata extra!">
-                </div>
-                <button id="btn-salvar-promocao" type="button">Salvar Promoção</button>
             </div>
 
             <!-- ABAS DE NAVEGAÇÃO -->
@@ -421,17 +444,27 @@
         const inputEmail = document.getElementById("email");
         const inputSenha = document.getElementById("senha");
         const erroLogin = document.getElementById("erro-login");
-        const btnToggleLoja = document.getElementById("btn-toggle-loja");
+        
+        // Botões do Modo da Loja
+        const btnModoAuto = document.getElementById("btn-modo-auto");
+        const btnModoAberto = document.getElementById("btn-modo-aberto");
+        const btnModoFechado = document.getElementById("btn-modo-fechado");
+
         const inputWhatsapp = document.getElementById("input-whatsapp");
         const displayWhatsappAtual = document.getElementById("display-whatsapp-atual");
         const btnSalvarWhatsapp = document.getElementById("btn-salvar-whatsapp");
         
-        // Elementos da Promoção
-        const btnTogglePromocao = document.getElementById("btn-toggle-promocao");
+        // Elementos de Promoção e Toggle do Formulário
+        const btnToggleFormPromo = document.getElementById("btn-toggle-form-promo");
+        const containerFormPromo = document.getElementById("container-form-promo");
         const selectPromoProduto = document.getElementById("select-promo-produto");
         const inputPromoPreco = document.getElementById("input-promo-preco");
         const inputPromoTexto = document.getElementById("input-promo-texto");
-        const btnSalvarPromocao = document.getElementById("btn-salvar-promocao");
+        const btnAdicionarPromocao = document.getElementById("btn-adicionar-promocao");
+        const listaAdminPromocoes = document.getElementById("lista-admin-promocoes");
+
+        let promocoesAtuaisCache = [];
+        let produtosCacheAdmin = [];
 
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
@@ -443,6 +476,14 @@
         btnAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "flex");
         fecharAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "none");
         modalAjudaImg.addEventListener("click", (e) => { if (e.target === modalAjudaImg) modalAjudaImg.style.display = "none"; });
+
+        // Evento para abrir/fechar o formulário de cadastro de promoções
+        btnToggleFormPromo.addEventListener("click", () => {
+            const estaOculto = containerFormPromo.style.display === "none";
+            containerFormPromo.style.display = estaOculto ? "block" : "none";
+            btnToggleFormPromo.textContent = estaOculto ? "✖ Fechar Formulário" : "➕ Adicionar Nova Promoção";
+            btnToggleFormPromo.style.backgroundColor = estaOculto ? "#ef4444" : "#3b82f6";
+        });
 
         const tabProdutos = document.getElementById("tab-produtos");
         const tabAdicionais = document.getElementById("tab-adicionais");
@@ -493,34 +534,12 @@
 
         const docRefConfig = doc(db, "configuracoes", "loja");
         
-        async function verificarEPopularDados(snapshotProd, snapshotAdic) {
-            if (snapshotProd.empty) {
-                const produtosIniciais = [
-                    { nome: "Poema Kids", categoria: "hamburgueres", preco: 25.00, descricao: "Pão brioche selado na manteiga, smash bovinos de 75g, queijo mussarela e maionese da casa, acompanha porção de fritas.", imagem: "../imagens/poema-kids.jpg", esgotado: false, ordem: 0 },
-                    { nome: "Smash 301", categoria: "hamburgueres", preco: 29.00, descricao: "Pão brioche selado na manteiga, dois smash bovinos de 75g cada, queijo mussarela e maionese da casa.", imagem: "../imagens/smash-301.jpg", esgotado: false, ordem: 1 }
-                ];
-                for (let i = 0; i < produtosIniciais.length; i++) {
-                    await addDoc(collection(db, "produtos"), produtosIniciais[i]);
-                }
-            }
-
-            if (snapshotAdic.empty) {
-                const adicionaisIniciais = [
-                    { nome: "Bacon", preco: 5.00, esgotado: false },
-                    { nome: "Cebola caramelizada", preco: 4.00, esgotado: false }
-                ];
-                for (const adic of adicionaisIniciais) {
-                    await addDoc(collection(db, "adicionais"), adic);
-                }
-            }
-        }
-
         async function iniciarOuvintesAdmin() {
             onSnapshot(docRefConfig, async (docSnap) => {
                 if (docSnap.exists()) {
                     const dados = docSnap.data();
-                    atualizarBotaoLoja(dados.aberto);
-                    atualizarBotaoPromocao(dados.promocaoAtiva);
+                    const modo = dados.modoLoja || (dados.aberto === false ? "fechado" : "automatico");
+                    atualizarVisualModoLoja(modo);
                     
                     if (dados.whatsapp) {
                         inputWhatsapp.value = dados.whatsapp;
@@ -529,62 +548,47 @@
                         displayWhatsappAtual.textContent = "Nenhum definido";
                     }
 
-                    if (dados.promocaoProdutoId) selectPromoProduto.value = dados.promocaoProdutoId;
-                    if (dados.promocaoPreco !== undefined) inputPromoPreco.value = dados.promocaoPreco;
-                    if (dados.promocaoDescricao) inputPromoTexto.value = dados.promocaoDescricao;
+                    promocoesAtuaisCache = dados.promocoes || [];
+                    renderizarListaAdminPromocoes();
                 } else {
-                    await setDoc(docRefConfig, { aberto: true, whatsapp: "", promocaoAtiva: false, promocaoProdutoId: "", promocaoPreco: "", promocaoDescricao: "" });
-                    atualizarBotaoLoja(true);
-                    atualizarBotaoPromocao(false);
+                    await setDoc(docRefConfig, { modoLoja: "automatico", whatsapp: "", promocoes: [] });
+                    atualizarVisualModoLoja("automatico");
                     displayWhatsappAtual.textContent = "Nenhum definido";
                 }
             });
 
-            const snapProd = await getDocs(collection(db, "produtos"));
-            const snapAdic = await getDocs(collection(db, "adicionais"));
-            await verificarEPopularDados(snapProd, snapAdic);
-
             onSnapshot(collection(db, "produtos"), (snapshot) => {
-                preencherSelectProdutos(snapshot);
+                produtosCacheAdmin = [];
+                snapshot.forEach(docSnap => produtosCacheAdmin.push({ id: docSnap.id, ...docSnap.data() }));
+                preencherSelectProdutos(produtosCacheAdmin);
                 renderizarListaProdutos(snapshot);
             });
             onSnapshot(collection(db, "adicionais"), (snapshot) => renderizarListaAdicionais(snapshot));
         }
 
-        function atualizarBotaoLoja(aberto) {
-            if (aberto) {
-                btnToggleLoja.textContent = "Aberto";
-                btnToggleLoja.className = "btn-status ativo";
-            } else {
-                btnToggleLoja.textContent = "Fechado";
-                btnToggleLoja.className = "btn-status inativo";
-            }
+        function atualizarVisualModoLoja(modo) {
+            btnModoAuto.classList.remove("ativo");
+            btnModoAberto.classList.remove("ativo");
+            btnModoFechado.classList.remove("ativo");
+
+            if (modo === "automatico") btnModoAuto.classList.add("ativo");
+            else if (modo === "aberto") btnModoAberto.classList.add("ativo");
+            else if (modo === "fechado") btnModoFechado.classList.add("ativo");
         }
 
-        function atualizarBotaoPromocao(ativa) {
-            if (ativa) {
-                btnTogglePromocao.textContent = "Ativa";
-                btnTogglePromocao.className = "btn-status ativo";
-            } else {
-                btnTogglePromocao.textContent = "Inativa";
-                btnTogglePromocao.className = "btn-status inativo";
-            }
-        }
-
-        btnToggleLoja.addEventListener("click", async () => {
-            const docSnap = await getDoc(docRefConfig);
-            const estadoAtual = docSnap.exists() ? docSnap.data().aberto : true;
-            const novoEstado = !estadoAtual;
-            await updateDoc(docRefConfig, { aberto: novoEstado });
-            mostrarAviso(novoEstado ? "Loja aberta com sucesso!" : "Loja fechada com sucesso!");
+        btnModoAuto.addEventListener("click", async () => {
+            await updateDoc(docRefConfig, { modoLoja: "automatico" });
+            mostrarAviso("Modo alterado para Automático!");
         });
 
-        btnTogglePromocao.addEventListener("click", async () => {
-            const docSnap = await getDoc(docRefConfig);
-            const estadoAtual = docSnap.exists() ? (docSnap.data().promocaoAtiva || false) : false;
-            const novoEstado = !estadoAtual;
-            await updateDoc(docRefConfig, { promocaoAtiva: novoEstado });
-            mostrarAviso(novoEstado ? "Promoção ativada com sucesso!" : "Promoção desativada!");
+        btnModoAberto.addEventListener("click", async () => {
+            await updateDoc(docRefConfig, { modoLoja: "aberto" });
+            mostrarAviso("Loja forçada como ABERTA!");
+        });
+
+        btnModoFechado.addEventListener("click", async () => {
+            await updateDoc(docRefConfig, { modoLoja: "fechado" });
+            mostrarAviso("Loja forçada como FECHADA!");
         });
 
         btnSalvarWhatsapp.addEventListener("click", async () => {
@@ -597,7 +601,7 @@
             mostrarAviso("Número do WhatsApp salvo com sucesso!");
         });
 
-        btnSalvarPromocao.addEventListener("click", async () => {
+        btnAdicionarPromocao.addEventListener("click", async () => {
             const produtoId = selectPromoProduto.value;
             const precoPromocional = parseFloat(inputPromoPreco.value.replace(",", "."));
             const descricao = inputPromoTexto.value.trim();
@@ -607,21 +611,60 @@
                 return;
             }
 
-            await updateDoc(docRefConfig, {
-                promocaoProdutoId: produtoId,
-                promocaoPreco: precoPromocional,
-                promocaoDescricao: descricao
-            });
-            mostrarAviso("Configurações da promoção salvas com sucesso!");
+            promocoesAtuaisCache.push({ produtoId, preco: precoPromocional, descricao });
+            await updateDoc(docRefConfig, { promocoes: promocoesAtuaisCache });
+
+            inputPromoPreco.value = "";
+            inputPromoTexto.value = "";
+            selectPromoProduto.value = "";
+
+            // Oculta o formulário novamente após salvar
+            containerFormPromo.style.display = "none";
+            btnToggleFormPromo.textContent = "➕ Adicionar Nova Promoção";
+            btnToggleFormPromo.style.backgroundColor = "#3b82f6";
+
+            mostrarAviso("Promoção adicionada com sucesso!");
         });
 
-        function preencherSelectProdutos(snapshot) {
+        function renderizarListaAdminPromocoes() {
+            listaAdminPromocoes.innerHTML = "";
+            if (promocoesAtuaisCache.length === 0) {
+                listaAdminPromocoes.innerHTML = `<p style="font-size: 13px; color: #777;">Nenhuma promoção ativa no momento.</p>`;
+                return;
+            }
+
+            promocoesAtuaisCache.forEach((promo, index) => {
+                const prod = produtosCacheAdmin.find(p => p.id === promo.produtoId);
+                const nomeProd = prod ? prod.nome : "Produto removido";
+
+                const div = document.createElement("div");
+                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 8px; border-radius: 4px; margin-bottom: 6px; font-size: 13px;";
+                div.innerHTML = `
+                    <div>
+                        <b>${nomeProd}</b> — R$ ${promo.preco.toFixed(2).replace('.', ',')}
+                        ${promo.descricao ? `<br><span style="color:#aaa; font-size:11px;">${promo.descricao}</span>` : ''}
+                    </div>
+                    <button type="button" data-index="${index}" class="btn-remover-promo" style="background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; border-radius: 4px;">Excluir</button>
+                `;
+                listaAdminPromocoes.appendChild(div);
+            });
+
+            listaAdminPromocoes.querySelectorAll(".btn-remover-promo").forEach(btn => {
+                btn.addEventListener("click", async (e) => {
+                    const idx = Number(e.target.dataset.index);
+                    promocoesAtuaisCache.splice(idx, 1);
+                    await updateDoc(docRefConfig, { promocoes: promocoesAtuaisCache });
+                    mostrarAviso("Promoção removida!");
+                });
+            });
+        }
+
+        function preencherSelectProdutos(produtos) {
             const valorAtualSelecionado = selectPromoProduto.value;
             selectPromoProduto.innerHTML = '<option value="">-- Selecione um produto --</option>';
-            snapshot.forEach((docSnap) => {
-                const p = docSnap.data();
+            produtos.forEach((p) => {
                 const opt = document.createElement("option");
-                opt.value = docSnap.id;
+                opt.value = p.id;
                 opt.textContent = `${p.nome} (R$ ${Number(p.preco).toFixed(2)})`;
                 selectPromoProduto.appendChild(opt);
             });
@@ -692,7 +735,6 @@
                 produtosArray.push({ id: docSnap.id, ...docSnap.data() });
             });
 
-            // Ordena pelo campo 'ordem' (ou 0 por defeito)
             produtosArray.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
 
             produtosArray.forEach((p, index) => {
@@ -735,13 +777,11 @@
                         produtosArray[index] = produtosArray[index - 1];
                         produtosArray[index - 1] = temp;
                         await reordenarProdutos(produtosArray);
-                        mostrarAviso("Ordem alterada com sucesso!");
                     } else if (acao === "descer-prod" && index < produtosArray.length - 1) {
                         const temp = produtosArray[index];
                         produtosArray[index] = produtosArray[index + 1];
                         produtosArray[index + 1] = temp;
                         await reordenarProdutos(produtosArray);
-                        mostrarAviso("Ordem alterada com sucesso!");
                     } else if (acao === "editar-prod") {
                         editIdInput.value = id;
                         document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
