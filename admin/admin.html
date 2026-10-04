@@ -206,7 +206,7 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="container-principal">
         <!-- Ícone discreto de instalação -->
         <button id="btn-instalar" title="Instalar Aplicação">📥</button>
 
@@ -248,12 +248,18 @@
                     </div>
                 </div>
 
-                <div class="campo" style="margin-bottom: 5px;">
-                    <label>WhatsApp para Pedidos (com DDI e DDD):</label>
-                    <input type="text" id="input-whatsapp" placeholder="Ex: 5551999999999">
+                <!-- Botão para abrir o editor de WhatsApp -->
+                <button id="btn-toggle-whatsapp" type="button" style="background-color: #3b82f6; margin-bottom: 10px;">📞 Alterar Número do WhatsApp</button>
+
+                <!-- Bloco de edição do WhatsApp oculto por padrão -->
+                <div id="container-form-whatsapp" style="display: none; background: #222; padding: 15px; border-radius: 6px; border: 1px solid #333; margin-top: 10px;">
+                    <div class="campo" style="margin-bottom: 5px;">
+                        <label>WhatsApp para Pedidos (com DDI e DDD):</label>
+                        <input type="text" id="input-whatsapp" placeholder="Ex: 5551999999999">
+                    </div>
+                    <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Número atual cadastrado: <b id="display-whatsapp-atual" style="color: #4ade80;">Carregando...</b></p>
+                    <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
                 </div>
-                <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Número atual cadastrado: <b id="display-whatsapp-atual" style="color: #4ade80;">Carregando...</b></p>
-                <button id="btn-salvar-whatsapp" type="button">Salvar Número do WhatsApp</button>
             </div>
 
             <!-- GERENCIADOR DE PROMOÇÕES MÚLTIPLAS COM BOTÃO DE OCULTAR -->
@@ -369,6 +375,11 @@
 
             <p id="msg-sucesso" class="msg"></p>
             <button id="btn-sair" type="button" style="background-color: #444; margin-top: 10px;">Sair</button>
+
+            <!-- ASSINATURA CS CODE SOLUTIONS NO FINAL DO PAINEL -->
+            <p style="font-size: 0.78rem; color: #aaa; text-align: center; margin-top: 25px; margin-bottom: 5px; letter-spacing: 0.5px;">
+                Powered by <span style="color: #f28c28; font-weight: bold;">CS Code Solutions</span>
+            </p>
         </div>
     </div>
 
@@ -453,6 +464,9 @@
         const btnModoAberto = document.getElementById("btn-modo-aberto");
         const btnModoFechado = document.getElementById("btn-modo-fechado");
 
+        // Toggle do WhatsApp
+        const btnToggleWhatsapp = document.getElementById("btn-toggle-whatsapp");
+        const containerFormWhatsapp = document.getElementById("container-form-whatsapp");
         const inputWhatsapp = document.getElementById("input-whatsapp");
         const displayWhatsappAtual = document.getElementById("display-whatsapp-atual");
         const btnSalvarWhatsapp = document.getElementById("btn-salvar-whatsapp");
@@ -466,41 +480,485 @@
         const btnAdicionarPromocao = document.getElementById("btn-adicionar-promocao");
         const listaAdminPromocoes = document.getElementById("lista-admin-promocoes");
 
-        // Elementos de Produtos e Toggle do Formulário
+        // Toggle do Formulário de Produtos
         const btnToggleFormProduto = document.getElementById("btn-toggle-form-produto");
         const containerFormProduto = document.getElementById("container-form-produto");
+        const tituloFormProduto = document.getElementById("titulo-form-produto");
+        const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
 
-        let promocoesAtuaisCache = [];
-        let produtosCacheAdmin = [];
-
+        // Outros elementos
         const msgSucesso = document.getElementById("msg-sucesso");
         const btnSair = document.getElementById("btn-sair");
 
-        const btnAjudaImg = document.getElementById("btn-ajuda-img");
-        const modalAjudaImg = document.getElementById("modal-ajuda-img");
-        const fecharAjudaImg = document.getElementById("fechar-ajuda-img");
+        // Ação do Botão para exibir o campo do WhatsApp e rolar para o final da página
+        if (btnToggleWhatsapp && containerFormWhatsapp) {
+            btnToggleWhatsapp.addEventListener("click", () => {
+                const visivel = containerFormWhatsapp.style.display === "block";
+                containerFormWhatsapp.style.display = visivel ? "none" : "block";
+                btnToggleWhatsapp.textContent = visivel ? "📞 Alterar Número do WhatsApp" : "❌ Fechar Edição do WhatsApp";
+                
+                if (!visivel) {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                }
+            });
+        }
 
-        btnAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "flex");
-        fecharAjudaImg.addEventListener("click", () => modalAjudaImg.style.display = "none");
-        modalAjudaImg.addEventListener("click", (e) => { if (e.target === modalAjudaImg) modalAjudaImg.style.display = "none"; });
+        // Toggle do Formulário de Nova Promoção com rolagem
+        if (btnToggleFormPromo && containerFormPromo) {
+            btnToggleFormPromo.addEventListener("click", () => {
+                const visivel = containerFormPromo.style.display === "block";
+                containerFormPromo.style.display = visivel ? "none" : "block";
+                btnToggleFormPromo.textContent = visivel ? "➕ Adicionar Nova Promoção" : "❌ Fechar Formulário";
+                
+                if (!visivel) {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                }
+            });
+        }
 
-        // Evento para abrir/fechar o formulário de cadastro de promoções
-        btnToggleFormPromo.addEventListener("click", () => {
-            const estaOculto = containerFormPromo.style.display === "none";
-            containerFormPromo.style.display = estaOculto ? "block" : "none";
-            btnToggleFormPromo.textContent = estaOculto ? "✖ Fechar Formulário" : "➕ Adicionar Nova Promoção";
-            btnToggleFormPromo.style.backgroundColor = estaOculto ? "#ef4444" : "#3b82f6";
+        // Toggle do Formulário de Novo Produto com rolagem
+        if (btnToggleFormProduto && containerFormProduto) {
+            btnToggleFormProduto.addEventListener("click", () => {
+                const visivel = containerFormProduto.style.display === "block";
+                containerFormProduto.style.display = visivel ? "none" : "block";
+                btnToggleFormProduto.textContent = visivel ? "➕ Adicionar Novo Produto" : "❌ Fechar Formulário";
+                
+                if (!visivel) {
+                    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+                }
+            });
+        }
+
+        // Autenticação Firebase
+        formLogin.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            erroLogin.textContent = "";
+            try {
+                await signInWithEmailAndPassword(auth, inputEmail.value.trim(), inputSenha.value);
+            } catch (error) {
+                erroLogin.textContent = "Erro ao entrar: " + error.message;
+            }
         });
 
-        // Evento para abrir/fechar o formulário de cadastro de produtos
-        btnToggleFormProduto.addEventListener("click", () => {
-            const estaOculto = containerFormProduto.style.display === "none";
-            containerFormProduto.style.display = estaOculto ? "block" : "none";
-            btnToggleFormProduto.textContent = estaOculto ? "✖ Fechar Formulário" : "➕ Adicionar Novo Produto";
-            btnToggleFormProduto.style.backgroundColor = estaOculto ? "#ef4444" : "#3b82f6";
-            if (estaOculto) limparFormularioProduto();
+        btnSair.addEventListener("click", async () => {
+            await signOut(auth);
         });
 
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                telaLogin.style.display = "none";
+                painelControle.style.display = "block";
+                carregarDadosLoja();
+                carregarProdutosAdmin();
+                carregarAdicionaisAdmin();
+            } else {
+                telaLogin.style.display = "block";
+                painelControle.style.display = "none";
+            }
+        });
+
+        // Carregar Configurações da Loja
+        function carregarDadosLoja() {
+            onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
+                if (docSnap.exists()) {
+                    const dados = docSnap.data();
+                    const modo = dados.modoLoja || (dados.aberto ? "aberto" : "fechado");
+                    atualizarBotoesModoLojaUI(modo);
+                    
+                    if (dados.whatsapp) {
+                        displayWhatsappAtual.textContent = dados.whatsapp;
+                        inputWhatsapp.value = dados.whatsapp;
+                    }
+                }
+            });
+        }
+
+        function atualizarBotoesModoLojaUI(modo) {
+            btnModoAuto.classList.remove("ativo");
+            btnModoAberto.classList.remove("ativo");
+            btnModoFechado.classList.remove("ativo");
+
+            if (modo === "aberto") btnModoAberto.classList.add("ativo");
+            else if (modo === "fechado") btnModoFechado.classList.add("ativo");
+            else btnModoAuto.classList.add("ativo");
+        }
+
+        async function alterarModoLoja(novoModo) {
+            try {
+                await updateDoc(doc(db, "configuracoes", "loja"), {
+                    modoLoja: novoModo,
+                    aberto: novoModo === "aberto"
+                });
+                mostrarMensagem("Modo da loja atualizado com sucesso!");
+            } catch (e) {
+                console.error("Erro ao alterar modo:", e);
+            }
+        }
+
+        btnModoAuto.onclick = () => alterarModoLoja("automatico");
+        btnModoAberto.onclick = () => alterarModoLoja("aberto");
+        btnModoFechado.onclick = () => alterarModoLoja("fechado");
+
+        // Salvar WhatsApp
+        btnSalvarWhatsapp.addEventListener("click", async () => {
+            const novoWhats = inputWhatsapp.value.trim();
+            if (!novoWhats) {
+                alert("Digite um número de WhatsApp válido.");
+                return;
+            }
+            try {
+                await updateDoc(doc(db, "configuracoes", "loja"), { whatsapp: novoWhats });
+                mostrarMensagem("Número do WhatsApp atualizado!");
+                containerFormWhatsapp.style.display = "none";
+                btnToggleWhatsapp.textContent = "📞 Alterar Número do WhatsApp";
+            } catch (e) {
+                console.error("Erro ao salvar WhatsApp:", e);
+            }
+        });
+
+        // Gerenciamento de Produtos
+        const listaGestaoProdutos = document.getElementById("lista-gestao-produtos");
+        const novoNome = document.getElementById("novo-nome");
+        const novoCategoria = document.getElementById("novo-categoria");
+        const novoPreco = document.getElementById("novo-preco");
+        const novoDescricao = document.getElementById("novo-descricao");
+        const novoImagem = document.getElementById("novo-imagem");
+        const btnSalvarProduto = document.getElementById("btn-salvar-produto");
+        const editId = document.getElementById("edit-id");
+
+        function carregarProdutosAdmin() {
+            onSnapshot(collection(db, "produtos"), (snapshot) => {
+                listaGestaoProdutos.innerHTML = "";
+                selectPromoProduto.innerHTML = '<option value="">Selecione um produto</option>';
+                
+                const produtos = [];
+                snapshot.forEach(docSnap => {
+                    produtos.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                produtos.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
+
+                if (produtos.length === 0) {
+                    listaGestaoProdutos.innerHTML = `<p style="font-size: 13px; color: #777;">Nenhum produto cadastrado.</p>`;
+                    return;
+                }
+
+                produtos.forEach(p => {
+                    // Preencher select de promoções
+                    const opt = document.createElement("option");
+                    opt.value = p.id;
+                    opt.textContent = `${p.nome} (R$ ${Number(p.preco).toFixed(2)})`;
+                    selectPromoProduto.appendChild(opt);
+
+                    // Renderizar item no painel
+                    const div = document.createElement("div");
+                    div.className = "item-admin-produto";
+                    div.innerHTML = `
+                        <div class="item-topo">
+                            <span><b>${p.nome}</b> (${p.categoria}) - R$ ${Number(p.preco).toFixed(2)}</span>
+                            <div class="item-botoes">
+                                <button type="button" class="btn-subir" data-id="${p.id}" style="padding: 4px 8px; font-size: 12px; background: #444;">⬆️</button>
+                                <button type="button" class="btn-descer" data-id="${p.id}" style="padding: 4px 8px; font-size: 12px; background: #444;">⬇️</button>
+                                <button type="button" class="btn-esgotar" data-id="${p.id}" data-esgotado="${p.esgotado}" style="padding: 4px 8px; font-size: 12px; background: ${p.esgotado ? '#ef4444' : '#22c55e'};">${p.esgotado ? 'Esgotado' : 'Disponível'}</button>
+                                <button type="button" class="btn-editar" data-id="${p.id}" style="padding: 4px 8px; font-size: 12px; background: #3b82f6;">✏️</button>
+                                <button type="button" class="btn-excluir" data-id="${p.id}" style="padding: 4px 8px; font-size: 12px; background: #ef4444;">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                    listaGestaoProdutos.appendChild(div);
+                });
+
+                configurarAcoesProdutos(produtos);
+            });
+        }
+
+        btnSalvarProduto.addEventListener("click", async () => {
+            const nome = novoNome.value.trim();
+            const categoria = novoCategoria.value;
+            const preco = parseFloat(novoPreco.value.replace(",", "."));
+            const descricao = novoDescricao.value.trim();
+            const imagem = novoImagem.value.trim();
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido.");
+                return;
+            }
+
+            try {
+                if (editId.value) {
+                    await updateDoc(doc(db, "produtos", editId.value), { nome, categoria, preco, descricao, imagem });
+                    mostrarMensagem("Produto atualizado com sucesso!");
+                } else {
+                    const snapshot = await getDocs(collection(db, "produtos"));
+                    const novaOrdem = snapshot.size;
+                    await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false, ordem: novaOrdem });
+                    mostrarMensagem("Produto cadastrado com sucesso!");
+                }
+                limparFormularioProduto();
+                containerFormProduto.style.display = "none";
+                btnToggleFormProduto.textContent = "➕ Adicionar Novo Produto";
+            } catch (e) {
+                console.error("Erro ao salvar produto:", e);
+            }
+        });
+
+        function limparFormularioProduto() {
+            editId.value = "";
+            novoNome.value = "";
+            novoPreco.value = "";
+            novoDescricao.value = "";
+            novoImagem.value = "../imagens/";
+            btnSalvarProduto.textContent = "Cadastrar Produto";
+            btnCancelarEdicao.style.display = "none";
+            tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
+        }
+
+        btnCancelarEdicao.addEventListener("click", () => {
+            limparFormularioProduto();
+            containerFormProduto.style.display = "none";
+            btnToggleFormProduto.textContent = "➕ Adicionar Novo Produto";
+        });
+
+        function configurarAcoesProdutos(produtos) {
+            document.querySelectorAll(".btn-esgotar").forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    const esgotadoAtual = b.dataset.esgotado === "true";
+                    await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
+                };
+            });
+
+            document.querySelectorAll(".btn-excluir").forEach(b => {
+                b.onclick = async () => {
+                    if (confirm("Tem certeza que deseja excluir este produto?")) {
+                        await deleteDoc(doc(db, "produtos", b.dataset.id));
+                        mostrarMensagem("Produto excluído!");
+                    }
+                };
+            });
+
+            document.querySelectorAll(".btn-editar").forEach(b => {
+                b.onclick = () => {
+                    const p = produtos.find(item => item.id === b.dataset.id);
+                    if (!p) return;
+                    editId.value = p.id;
+                    novoNome.value = p.nome;
+                    novoCategoria.value = p.categoria;
+                    novoPreco.value = p.preco;
+                    novoDescricao.value = p.descricao || "";
+                    novoImagem.value = p.imagem || "../imagens/";
+                    btnSalvarProduto.textContent = "Salvar Alterações";
+                    btnCancelarEdicao.style.display = "block";
+                    tituloFormProduto.textContent = "✏️ Editar Produto";
+                    containerFormProduto.style.display = "block";
+                    btnToggleFormProduto.textContent = "❌ Fechar Formulário";
+                    containerFormProduto.scrollIntoView({ behavior: "smooth" });
+                };
+            });
+
+            document.querySelectorAll(".btn-subir").forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    const index = produtos.findIndex(item => item.id === id);
+                    if (index > 0) {
+                        const atual = produtos[index];
+                        const acima = produtos[index - 1];
+                        await updateDoc(doc(db, "produtos", atual.id), { ordem: acima.ordem ?? (index - 1) });
+                        await updateDoc(doc(db, "produtos", acima.id), { ordem: atual.ordem ?? index });
+                    }
+                };
+            });
+
+            document.querySelectorAll(".btn-descer").forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    const index = produtos.findIndex(item => item.id === id);
+                    if (index < produtos.length - 1) {
+                        const atual = produtos[index];
+                        const abaixo = produtos[index + 1];
+                        await updateDoc(doc(db, "produtos", atual.id), { ordem: abaixo.ordem ?? (index + 1) });
+                        await updateDoc(doc(db, "produtos", abaixo.id), { ordem: atual.ordem ?? index });
+                    }
+                };
+            });
+        }
+
+        // Gerenciamento de Promoções
+        btnAdicionarPromocao.addEventListener("click", async () => {
+            const produtoId = selectPromoProduto.value;
+            const preco = parseFloat(inputPromoPreco.value.replace(",", "."));
+            const descricao = inputPromoTexto.value.trim();
+
+            if (!produtoId || isNaN(preco)) {
+                alert("Selecione um produto e informe um preço promocional válido.");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "configuracoes", "loja");
+                const docSnap = await getDoc(docRef);
+                let promocoes = [];
+                if (docSnap.exists() && docSnap.data().promocoes) {
+                    promocoes = docSnap.data().promocoes;
+                }
+
+                promocoes.push({ produtoId, preco, descricao });
+                await updateDoc(docRef, { promocoes });
+
+                mostrarMensagem("Promoção adicionada com sucesso!");
+                inputPromoPreco.value = "";
+                inputPromoTexto.value = "";
+                selectPromoProduto.value = "";
+                containerFormPromo.style.display = "none";
+                btnToggleFormPromo.textContent = "➕ Adicionar Nova Promoção";
+            } catch (e) {
+                console.error("Erro ao adicionar promoção:", e);
+            }
+        });
+
+        // Ouve promoções para gerenciar na listagem admin
+        onSnapshot(doc(db, "configuracoes", "loja"), (docSnap) => {
+            if (docSnap.exists()) {
+                const dados = docSnap.data();
+                const promocoes = dados.promocoes || [];
+                
+                listaAdminPromocoes.innerHTML = "";
+                if (promocoes.length === 0) {
+                    listaAdminPromocoes.innerHTML = `<p style="font-size: 13px; color: #777;">Nenhuma promoção adicionada.</p>`;
+                    return;
+                }
+
+                promocoes.forEach((promo, index) => {
+                    const div = document.createElement("div");
+                    div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #222; padding: 8px; border-radius: 4px; margin-bottom: 6px; font-size: 13px;";
+                    div.innerHTML = `
+                        <span>Promoção #${index + 1} (R$ ${Number(promo.preco).toFixed(2)})</span>
+                        <button type="button" class="btn-remover-promo" data-index="${index}" style="padding: 3px 8px; font-size: 11px; background: #ef4444; width: auto;">Remover</button>
+                    `;
+                    listaAdminPromocoes.appendChild(div);
+                });
+
+                document.querySelectorAll(".btn-remover-promo").forEach(b => {
+                    b.onclick = async () => {
+                        const idx = parseInt(b.dataset.index);
+                        promocoes.splice(idx, 1);
+                        await updateDoc(doc(db, "configuracoes", "loja"), { promocoes });
+                        mostrarMensagem("Promoção removida!");
+                    };
+                });
+            }
+        });
+
+        // Gerenciamento de Adicionais
+        const listaGestaoAdicionais = document.getElementById("lista-gestao-adicionais");
+        const adicNome = document.getElementById("adic-nome");
+        const adicPreco = document.getElementById("adic-preco");
+        const btnSalvarAdicional = document.getElementById("btn-salvar-adicional");
+        const editIdAdic = document.getElementById("edit-id-adic");
+        const btnCancelarEdicaoAdic = document.getElementById("btn-cancelar-edicao-adic");
+        const tituloFormAdicional = document.getElementById("titulo-form-adicional");
+
+        function carregarAdicionaisAdmin() {
+            onSnapshot(collection(db, "adicionais"), (snapshot) => {
+                listaGestaoAdicionais.innerHTML = "";
+                const adicionais = [];
+                snapshot.forEach(docSnap => {
+                    adicionais.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                if (adicionais.length === 0) {
+                    listaGestaoAdicionais.innerHTML = `<p style="font-size: 13px; color: #777;">Nenhum adicional cadastrado.</p>`;
+                    return;
+                }
+
+                adicionais.forEach(a => {
+                    const div = document.createElement("div");
+                    div.className = "item-admin-produto";
+                    div.innerHTML = `
+                        <div class="item-topo">
+                            <span><b>${a.nome}</b> - R$ ${Number(a.preco).toFixed(2)}</span>
+                            <div class="item-botoes">
+                                <button type="button" class="btn-esgotar-adic" data-id="${a.id}" data-esgotado="${a.esgotado}" style="padding: 4px 8px; font-size: 12px; background: ${a.esgotado ? '#ef4444' : '#22c55e'};">${a.esgotado ? 'Esgotado' : 'Disponível'}</button>
+                                <button type="button" class="btn-editar-adic" data-id="${a.id}" style="padding: 4px 8px; font-size: 12px; background: #3b82f6;">✏️</button>
+                                <button type="button" class="btn-excluir-adic" data-id="${a.id}" style="padding: 4px 8px; font-size: 12px; background: #ef4444;">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                    listaGestaoAdicionais.appendChild(div);
+                });
+
+                configurarAcoesAdicionais(adicionais);
+            });
+        }
+
+        btnSalvarAdicional.addEventListener("click", async () => {
+            const nome = adicNome.value.trim();
+            const preco = parseFloat(adicPreco.value.replace(",", "."));
+
+            if (!nome || isNaN(preco)) {
+                alert("Preencha o nome e um preço válido para o adicional.");
+                return;
+            }
+
+            try {
+                if (editIdAdic.value) {
+                    await updateDoc(doc(db, "adicionais", editIdAdic.value), { nome, preco });
+                    mostrarMensagem("Adicional atualizado com sucesso!");
+                } else {
+                    await addDoc(collection(db, "adicionais"), { nome, preco, esgotado: false });
+                    mostrarMensagem("Adicional cadastrado com sucesso!");
+                }
+                limparFormularioAdicional();
+            } catch (e) {
+                console.error("Erro ao salvar adicional:", e);
+            }
+        });
+
+        function limparFormularioAdicional() {
+            editIdAdic.value = "";
+            adicNome.value = "";
+            adicPreco.value = "";
+            btnSalvarAdicional.textContent = "Cadastrar Adicional";
+            btnCancelarEdicaoAdic.style.display = "none";
+            tituloFormAdicional.textContent = "➕ Adicionar Novo Adicional";
+        }
+
+        btnCancelarEdicaoAdic.addEventListener("click", limparFormularioAdicional);
+
+        function configurarAcoesAdicionais(adicionais) {
+            document.querySelectorAll(".btn-esgotar-adic").forEach(b => {
+                b.onclick = async () => {
+                    const id = b.dataset.id;
+                    const esgotadoAtual = b.dataset.esgotado === "true";
+                    await updateDoc(doc(db, "adicionais", id), { esgotado: !esgotadoAtual });
+                };
+            });
+
+            document.querySelectorAll(".btn-excluir-adic").forEach(b => {
+                b.onclick = async () => {
+                    if (confirm("Deseja excluir este adicional?")) {
+                        await deleteDoc(doc(db, "adicionais", b.dataset.id));
+                        mostrarMensagem("Adicional excluído!");
+                    }
+                };
+            });
+
+            document.querySelectorAll(".btn-editar-adic").forEach(b => {
+                b.onclick = () => {
+                    const a = adicionais.find(item => item.id === b.dataset.id);
+                    if (!a) return;
+                    editIdAdic.value = a.id;
+                    adicNome.value = a.nome;
+                    adicPreco.value = a.preco;
+                    btnSalVarAdicional = "Salvar Alterações";
+                    btnSalvarAdicional.textContent = "Salvar Alterações";
+                    btnCancelarEdicaoAdic.style.display = "block";
+                    tituloFormAdicional.textContent = "✏️ Editar Adicional";
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                };
+            });
+        }
+
+        // Sistema de Abas
         const tabProdutos = document.getElementById("tab-produtos");
         const tabAdicionais = document.getElementById("tab-adicionais");
         const conteudoProdutos = document.getElementById("conteudo-produtos");
@@ -520,408 +978,20 @@
             conteudoProdutos.style.display = "none";
         });
 
-        formLogin.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            erroLogin.textContent = "";
+        // Modal de Ajuda de Imagem
+        const btnAjudaImg = document.getElementById("btn-ajuda-img");
+        const modalAjudaImg = document.getElementById("modal-ajuda-img");
+        const fecharAjudaImg = document.getElementById("fechar-ajuda-img");
 
-            try {
-                await signInWithEmailAndPassword(auth, inputEmail.value.trim(), inputSenha.value);
-                telaLogin.style.display = "none";
-                painelControle.style.display = "block";
-                iniciarOuvintesAdmin();
-            } catch (error) {
-                console.error("Erro no login:", error);
-                erroLogin.textContent = "Erro Firebase: " + error.code;
-            }
-        });
+        btnAjudaImg.onclick = () => modalAjudaImg.style.display = "flex";
+        fecharAjudaImg.onclick = () => modalAjudaImg.style.display = "none";
+        window.onclick = (e) => {
+            if (e.target === modalAjudaImg) modalAjudaImg.style.display = "none";
+        };
 
-        btnSair.addEventListener("click", async () => {
-            try {
-                await signOut(auth);
-                painelControle.style.display = "none";
-                telaLogin.style.display = "block";
-                inputEmail.value = "";
-                inputSenha.value = "";
-                erroLogin.textContent = "";
-            } catch (error) {
-                console.error("Erro ao sair:", error);
-            }
-        });
-
-        const docRefConfig = doc(db, "configuracoes", "loja");
-        
-        async function iniciarOuvintesAdmin() {
-            onSnapshot(docRefConfig, async (docSnap) => {
-                if (docSnap.exists()) {
-                    const dados = docSnap.data();
-                    const modo = dados.modoLoja || (dados.aberto === false ? "fechado" : "automatico");
-                    atualizarVisualModoLoja(modo);
-                    
-                    if (dados.whatsapp) {
-                        inputWhatsapp.value = dados.whatsapp;
-                        displayWhatsappAtual.textContent = dados.whatsapp;
-                    } else {
-                        displayWhatsappAtual.textContent = "Nenhum definido";
-                    }
-
-                    promocoesAtuaisCache = dados.promocoes || [];
-                    renderizarListaAdminPromocoes();
-                } else {
-                    await setDoc(docRefConfig, { modoLoja: "automatico", whatsapp: "", promocoes: [] });
-                    atualizarVisualModoLoja("automatico");
-                    displayWhatsappAtual.textContent = "Nenhum definido";
-                }
-            });
-
-            onSnapshot(collection(db, "produtos"), (snapshot) => {
-                produtosCacheAdmin = [];
-                snapshot.forEach(docSnap => produtosCacheAdmin.push({ id: docSnap.id, ...docSnap.data() }));
-                preencherSelectProdutos(produtosCacheAdmin);
-                renderizarListaProdutos(snapshot);
-            });
-            onSnapshot(collection(db, "adicionais"), (snapshot) => renderizarListaAdicionais(snapshot));
-        }
-
-        function atualizarVisualModoLoja(modo) {
-            btnModoAuto.classList.remove("ativo");
-            btnModoAberto.classList.remove("ativo");
-            btnModoFechado.classList.remove("ativo");
-
-            if (modo === "automatico") btnModoAuto.classList.add("ativo");
-            else if (modo === "aberto") btnModoAberto.classList.add("ativo");
-            else if (modo === "fechado") btnModoFechado.classList.add("ativo");
-        }
-
-        btnModoAuto.addEventListener("click", async () => {
-            await updateDoc(docRefConfig, { modoLoja: "automatico" });
-            mostrarAviso("Modo alterado para Automático!");
-        });
-
-        btnModoAberto.addEventListener("click", async () => {
-            await updateDoc(docRefConfig, { modoLoja: "aberto" });
-            mostrarAviso("Loja forçada como ABERTA!");
-        });
-
-        btnModoFechado.addEventListener("click", async () => {
-            await updateDoc(docRefConfig, { modoLoja: "fechado" });
-            mostrarAviso("Loja forçada como FECHADA!");
-        });
-
-        btnSalvarWhatsapp.addEventListener("click", async () => {
-            const numeroWhatsapp = inputWhatsapp.value.trim();
-            if (!numeroWhatsapp) {
-                alert("Insira um número de WhatsApp válido.");
-                return;
-            }
-            await updateDoc(docRefConfig, { whatsapp: numeroWhatsapp });
-            mostrarAviso("Número do WhatsApp salvo com sucesso!");
-        });
-
-        btnAdicionarPromocao.addEventListener("click", async () => {
-            const produtoId = selectPromoProduto.value;
-            const precoPromocional = parseFloat(inputPromoPreco.value.replace(",", "."));
-            const descricao = inputPromoTexto.value.trim();
-
-            if (!produtoId || isNaN(precoPromocional)) {
-                alert("Selecione um produto e informe um preço promocional válido.");
-                return;
-            }
-
-            promocoesAtuaisCache.push({ produtoId, preco: precoPromocional, descricao });
-            await updateDoc(docRefConfig, { promocoes: promocoesAtuaisCache });
-
-            inputPromoPreco.value = "";
-            inputPromoTexto.value = "";
-            selectPromoProduto.value = "";
-
-            containerFormPromo.style.display = "none";
-            btnToggleFormPromo.textContent = "➕ Adicionar Nova Promoção";
-            btnToggleFormPromo.style.backgroundColor = "#3b82f6";
-
-            mostrarAviso("Promoção adicionada com sucesso!");
-        });
-
-        function renderizarListaAdminPromocoes() {
-            listaAdminPromocoes.innerHTML = "";
-            if (promocoesAtuaisCache.length === 0) {
-                listaAdminPromocoes.innerHTML = `<p style="font-size: 13px; color: #777;">Nenhuma promoção ativa no momento.</p>`;
-                return;
-            }
-
-            promocoesAtuaisCache.forEach((promo, index) => {
-                const prod = produtosCacheAdmin.find(p => p.id === promo.produtoId);
-                const nomeProd = prod ? prod.nome : "Produto removido";
-
-                const div = document.createElement("div");
-                div.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #1e1e1e; padding: 8px; border-radius: 4px; margin-bottom: 6px; font-size: 13px;";
-                div.innerHTML = `
-                    <div>
-                        <b>${nomeProd}</b> — R$ ${promo.preco.toFixed(2).replace('.', ',')}
-                        ${promo.descricao ? `<br><span style="color:#aaa; font-size:11px;">${promo.descricao}</span>` : ''}
-                    </div>
-                    <button type="button" data-index="${index}" class="btn-remover-promo" style="background: #ef4444; width: auto; padding: 5px 10px; font-size: 12px; border-radius: 4px;">Excluir</button>
-                `;
-                listaAdminPromocoes.appendChild(div);
-            });
-
-            listaAdminPromocoes.querySelectorAll(".btn-remover-promo").forEach(btn => {
-                btn.addEventListener("click", async (e) => {
-                    const idx = Number(e.target.dataset.index);
-                    promocoesAtuaisCache.splice(idx, 1);
-                    await updateDoc(docRefConfig, { promocoes: promocoesAtuaisCache });
-                    mostrarAviso("Promoção removida!");
-                });
-            });
-        }
-
-        function preencherSelectProdutos(produtos) {
-            const valorAtualSelecionado = selectPromoProduto.value;
-            selectPromoProduto.innerHTML = '<option value="">-- Selecione um produto --</option>';
-            produtos.forEach((p) => {
-                const opt = document.createElement("option");
-                opt.value = p.id;
-                opt.textContent = `${p.nome} (R$ ${Number(p.preco).toFixed(2)})`;
-                selectPromoProduto.appendChild(opt);
-            });
-            if (valorAtualSelecionado) selectPromoProduto.value = valorAtualSelecionado;
-        }
-
-        const btnSalvarProduto = document.getElementById("btn-salvar-produto");
-        const btnCancelarEdicao = document.getElementById("btn-cancelar-edicao");
-        const tituloFormProduto = document.getElementById("titulo-form-produto");
-        const editIdInput = document.getElementById("edit-id");
-
-        btnSalvarProduto.addEventListener("click", async () => {
-            const idEdicao = editIdInput.value;
-            const nome = document.getElementById("novo-nome").value.trim();
-            const categoria = document.getElementById("novo-categoria").value;
-            const preco = parseFloat(document.getElementById("novo-preco").value.replace(",", "."));
-            const descricao = document.getElementById("novo-descricao").value.trim();
-            const imagem = document.getElementById("novo-imagem").value.trim() || "../imagens/icone.png";
-
-            if (!nome || isNaN(preco)) {
-                alert("Preencha o nome e um preço válido.");
-                return;
-            }
-
-            if (idEdicao) {
-                await updateDoc(doc(db, "produtos", idEdicao), { nome, categoria, preco, descricao, imagem });
-                mostrarAviso("Produto atualizado com sucesso!");
-                limparFormularioProduto();
-            } else {
-                const snapTotal = await getDocs(collection(db, "produtos"));
-                const novaOrdem = snapTotal.size;
-                await addDoc(collection(db, "produtos"), { nome, categoria, preco, descricao, imagem, esgotado: false, ordem: novaOrdem });
-                mostrarAviso("Produto adicionado com sucesso!");
-                limparFormularioProduto();
-            }
-        });
-
-        btnCancelarEdicao.addEventListener("click", limparFormularioProduto);
-
-        function limparFormularioProduto() {
-            editIdInput.value = "";
-            document.getElementById("novo-nome").value = "";
-            document.getElementById("novo-preco").value = "";
-            document.getElementById("novo-descricao").value = "";
-            document.getElementById("novo-imagem").value = "../imagens/";
-            tituloFormProduto.textContent = "➕ Adicionar Novo Produto";
-            btnSalvarProduto.textContent = "Cadastrar Produto";
-            btnCancelarEdicao.style.display = "none";
-            
-            // Oculta o formulário ao finalizar ou cancelar a edição
-            containerFormProduto.style.display = "none";
-            btnToggleFormProduto.textContent = "➕ Adicionar Novo Produto";
-            btnToggleFormProduto.style.backgroundColor = "#3b82f6";
-        }
-
-        async function reordenarProdutos(produtosArray) {
-            for (let i = 0; i < produtosArray.length; i++) {
-                await updateDoc(doc(db, "produtos", produtosArray[i].id), { ordem: i });
-            }
-        }
-
-        function renderizarListaProdutos(snapshot) {
-            const listaDiv = document.getElementById("lista-gestao-produtos");
-            listaDiv.innerHTML = "";
-
-            if (snapshot.empty) {
-                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum produto cadastrado.</p>";
-                return;
-            }
-
-            let produtosArray = [];
-            snapshot.forEach((docSnap) => {
-                produtosArray.push({ id: docSnap.id, ...docSnap.data() });
-            });
-
-            produtosArray.sort((a, b) => (a.ordem || 0) - (b.ordem || 0));
-
-            produtosArray.forEach((p, index) => {
-                const id = p.id;
-                const item = document.createElement("div");
-                item.className = "item-admin-produto";
-                item.innerHTML = `
-                    <div class="item-topo">
-                        <span><b>${p.nome}</b> — R$ ${Number(p.preco).toFixed(2)} (${p.categoria})</span>
-                    </div>
-                    <div class="item-botoes">
-                        <button type="button" style="background: #444; width: 30px; height: 32px; padding: 0; font-size: 12px; border-radius:4px; border:none; color:white; cursor:pointer; display: flex; align-items: center; justify-content: center;" data-acao="subir-prod" data-id="${id}" ${index === 0 ? 'disabled style="opacity:0.3; cursor:not-allowed; width:30px; height:32px;"' : ''}>⬆️</button>
-                        <button type="button" style="background: #444; width: 30px; height: 32px; padding: 0; font-size: 12px; border-radius:4px; border:none; color:white; cursor:pointer; display: flex; align-items: center; justify-content: center;" data-acao="descer-prod" data-id="${id}" ${index === produtosArray.length - 1 ? 'disabled style="opacity:0.3; cursor:not-allowed; width:30px; height:32px;"' : ''}>⬇️</button>
-                        <button class="btn-status ${p.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 7px 10px; font-size: 11px; flex: 1;" data-acao="toggle-prod" data-id="${id}" data-esgotado="${p.esgotado}">
-                            ${p.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
-                        </button>
-                        <button type="button" style="background: #3b82f6; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-prod" data-id="${id}" data-nome="${encodeURIComponent(p.nome)}" data-cat="${p.categoria}" data-preco="${p.preco}" data-desc="${encodeURIComponent(p.descricao || '')}" data-img="${encodeURIComponent(p.imagem || '')}">✏️ Editar</button>
-                        <button type="button" style="background: #ef4444; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-prod" data-id="${id}">🗑️ Excluir</button>
-                    </div>
-                `;
-                listaDiv.appendChild(item);
-            });
-
-            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
-                btn.addEventListener("click", async (e) => {
-                    const acao = e.target.dataset.acao;
-                    const id = e.target.dataset.id;
-                    const index = produtosArray.findIndex(p => p.id === id);
-
-                    if (acao === "toggle-prod") {
-                        const esgotadoAtual = e.target.dataset.esgotado === "true";
-                        await updateDoc(doc(db, "produtos", id), { esgotado: !esgotadoAtual });
-                    } else if (acao === "apagar-prod") {
-                        if (confirm("Deseja excluir este produto?")) {
-                            await deleteDoc(doc(db, "produtos", id));
-                            mostrarAviso("Produto excluído!");
-                        }
-                    } else if (acao === "subir-prod" && index > 0) {
-                        const temp = produtosArray[index];
-                        produtosArray[index] = produtosArray[index - 1];
-                        produtosArray[index - 1] = temp;
-                        await reordenarProdutos(produtosArray);
-                    } else if (acao === "descer-prod" && index < produtosArray.length - 1) {
-                        const temp = produtosArray[index];
-                        produtosArray[index] = produtosArray[index + 1];
-                        produtosArray[index + 1] = temp;
-                        await reordenarProdutos(produtosArray);
-                    } else if (acao === "editar-prod") {
-                        editIdInput.value = id;
-                        document.getElementById("novo-nome").value = decodeURIComponent(e.target.dataset.nome);
-                        document.getElementById("novo-categoria").value = e.target.dataset.cat;
-                        document.getElementById("novo-preco").value = e.target.dataset.preco;
-                        document.getElementById("novo-descricao").value = decodeURIComponent(e.target.dataset.desc);
-                        document.getElementById("novo-imagem").value = decodeURIComponent(e.target.dataset.img);
-
-                        tituloFormProduto.textContent = "✏ Editar Produto";
-                        btnSalvarProduto.textContent = "Salvar Alterações";
-                        btnCancelarEdicao.style.display = "block";
-                        
-                        // Abre o formulário automaticamente ao clicar em editar
-                        containerFormProduto.style.display = "block";
-                        btnToggleFormProduto.textContent = "✖ Fechar Formulário";
-                        btnToggleFormProduto.style.backgroundColor = "#ef4444";
-
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                });
-            });
-        }
-
-        const btnSalvarAdicional = document.getElementById("btn-salvar-adicional");
-        const btnCancelarEdicaoAdic = document.getElementById("btn-cancelar-edicao-adic");
-        const tituloFormAdicional = document.getElementById("titulo-form-adicional");
-        const editIdAdicInput = document.getElementById("edit-id-adic");
-
-        btnSalvarAdicional.addEventListener("click", async () => {
-            const idEdicao = editIdAdicInput.value;
-            const nome = document.getElementById("adic-nome").value.trim();
-            const preco = parseFloat(document.getElementById("adic-preco").value.replace(",", "."));
-
-            if (!nome || isNaN(preco)) {
-                alert("Preencha o nome e um preço válido para o adicional.");
-                return;
-            }
-
-            if (idEdicao) {
-                await updateDoc(doc(db, "adicionais", idEdicao), { nome, preco });
-                mostrarAviso("Adicional atualizado com sucesso!");
-                limparFormularioAdicional();
-            } else {
-                await addDoc(collection(db, "adicionais"), { nome, preco, esgotado: false });
-                mostrarAviso("Adicional adicionado com sucesso!");
-                limparFormularioAdicional();
-            }
-        });
-
-        btnCancelarEdicaoAdic.addEventListener("click", limparFormularioAdicional);
-
-        function limparFormularioAdicional() {
-            editIdAdicInput.value = "";
-            document.getElementById("adic-nome").value = "";
-            document.getElementById("adic-preco").value = "";
-            tituloFormAdicional.textContent = "➕ Adicionar Novo Adicional";
-            btnSalvarAdicional.textContent = "Cadastrar Adicional";
-            btnCancelarEdicaoAdic.style.display = "none";
-        }
-
-        function renderizarListaAdicionais(snapshot) {
-            const listaDiv = document.getElementById("lista-gestao-adicionais");
-            listaDiv.innerHTML = "";
-
-            if (snapshot.empty) {
-                listaDiv.innerHTML = "<p style='font-size:13px; color:#aaa;'>Nenhum adicional cadastrado.</p>";
-                return;
-            }
-
-            snapshot.forEach((docSnap) => {
-                const a = docSnap.data();
-                const id = docSnap.id;
-
-                const item = document.createElement("div");
-                item.className = "item-admin-produto";
-                item.innerHTML = `
-                    <div class="item-topo">
-                        <span><b>${a.nome}</b> — R$ ${Number(a.preco).toFixed(2)}</span>
-                    </div>
-                    <div class="item-botoes">
-                        <button class="btn-status ${a.esgotado ? 'inativo' : 'ativo'}" type="button" style="padding: 7px 10px; font-size: 11px; flex: 1;" data-acao="toggle-adic" data-id="${id}" data-esgotado="${a.esgotado}">
-                            ${a.esgotado ? '🔴 Esgotado' : '🟢 Disponível'}
-                        </button>
-                        <button type="button" style="background: #3b82f6; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="editar-adic" data-id="${id}" data-nome="${encodeURIComponent(a.nome)}" data-preco="${a.preco}">✏️ Editar</button>
-                        <button type="button" style="background: #ef4444; padding: 7px 10px; font-size: 11px; border-radius:4px; border:none; color:white; cursor:pointer;" data-acao="apagar-adic" data-id="${id}">🗑️ Excluir</button>
-                    </div>
-                `;
-                listaDiv.appendChild(item);
-            });
-
-            listaDiv.querySelectorAll("button[data-acao]").forEach(btn => {
-                btn.addEventListener("click", async (e) => {
-                    const acao = e.target.dataset.acao;
-                    const id = e.target.dataset.id;
-
-                    if (acao === "toggle-adic") {
-                        const esgotadoAtual = e.target.dataset.esgotado === "true";
-                        await updateDoc(doc(db, "adicionais", id), { esgotado: !esgotadoAtual });
-                    } else if (acao === "apagar-adic") {
-                        if (confirm("Deseja excluir este adicional?")) {
-                            await deleteDoc(doc(db, "adicionais", id));
-                            mostrarAviso("Adicional excluído!");
-                        }
-                    } else if (acao === "editar-adic") {
-                        editIdAdicInput.value = id;
-                        document.getElementById("adic-nome").value = decodeURIComponent(e.target.dataset.nome);
-                        document.getElementById("adic-preco").value = e.target.dataset.preco;
-
-                        tituloFormAdicional.textContent = "✏️ Editar Adicional";
-                        btnSalvarAdicional.textContent = "Salvar Alterações";
-                        btnCancelarEdicaoAdic.style.display = "block";
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                    }
-                });
-            });
-        }
-
-        function mostrarAviso(texto) {
+        function mostrarMensagem(texto) {
             msgSucesso.textContent = texto;
-            setTimeout(() => msgSucesso.textContent = "", 2500);
+            setTimeout(() => { msgSucesso.textContent = ""; }, 4000);
         }
     </script>
 </body>
