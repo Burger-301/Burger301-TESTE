@@ -408,15 +408,24 @@ function reativarEventosBotoes() {
 
             const nome = botao.dataset.produto;
             const preco = parseFloat(botao.dataset.preco);
+            
+            // Busca a descrição direto no cache ou no card HTML correspondente
+            const produtoCache = listaProdutosCache.find(p => p.nome === nome);
             const cardProduto = botao.closest(".produto");
-            let descricaoCapturada = cardProduto ? cardProduto.querySelector(".descricao").innerText.trim() : "";
+            let descricaoCapturada = "";
+
+            if (cardProduto && cardProduto.querySelector(".descricao")) {
+                descricaoCapturada = cardProduto.querySelector(".descricao").innerHTML.trim();
+            } else if (produtoCache && produtoCache.descricao) {
+                descricaoCapturada = produtoCache.descricao;
+            }
 
             produtoAtual = { nome, preco };
             quantidadeAtual = 1;
             observacaoProduto.value = "";
 
             modalNomeProduto.textContent = nome;
-            modalDescricaoProduto.innerText = descricaoCapturada;
+            modalDescricaoProduto.innerHTML = descricaoCapturada; // Mantém formatações como <br>
             modalPrecoProduto.textContent = formatarMoeda(preco);
             quantidadeProduto.textContent = quantidadeAtual;
 
